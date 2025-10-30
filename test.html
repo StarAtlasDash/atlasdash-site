@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>AtlasDash — The Star Atlas Dashboard</title>
+	<meta name="description"
+		content="AtlasDash is Aephia Industries’ analytics platform for the Star Atlas economy, markets, and governance — revealing the metaverse in motion." />
+
+	<!-- ECharts CDN -->
+	<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+
+	<style>
+		:root {
+			--bg: #070b12;
+			--card: #0f1726;
+			--ink: #0ea5e9;
+			--ink-2: #67e8f9;
+			--text: #e6edf6;
+			--muted: #a6b3c2;
+			--line: #1e293b;
+			--radius: 14px;
+			--shadow: 0 10px 30px rgba(2, 12, 27, .5);
+			--container: 1160px;
+			--pad: 20px;
+		}
+
+		body {
+			margin: 0;
+			background: var(--bg);
+			color: var(--text);
+			font: 400 1rem/1.6 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+			-webkit-font-smoothing: antialiased;
+		}
+
+		a {
+			color: var(--ink);
+			text-decoration: none;
+		}
+
+		a:hover {
+			text-decoration: underline;
+		}
+
+		.container {
+			width: min(100% - 2*var(--pad), var(--container));
+			margin-inline: auto;
+		}
+
+		header.site {
+			position: sticky;
+			top: 0;
+			z-index: 10;
+			backdrop-filter: blur(10px) saturate(160%);
+			background: rgba(7, 11, 18, .85);
+			border-bottom: 1px solid var(--line);
+		}
+
+		.nav {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding: 14px 0;
+		}
+
+		.brand {
+			display: flex;
+			gap: 12px;
+			align-items: center;
+		}
+
+		.brand-logo {
+			width: 34px;
+			height: 34px;
+			border-radius: 8px;
+			background: radial-gradient(60% 60% at 50% 50%, var(--ink-2), var(--ink) 60%, #073d59);
+		}
+
+		h1,
+		h2,
+		h3 {
+			line-height: 1.2;
+			margin: 0 0 10px;
+		}
+
+		h1 {
+			font-size: clamp(2rem, 3vw+1rem, 3.5rem);
+		}
+
+		h2 {
+			font-size: clamp(1.5rem, 1.8vw+1rem, 2rem);
+		}
+
+		h3 {
+			font-size: 1.2rem;
+		}
+
+		.eyebrow {
+			color: var(--ink-2);
+			font-size: .85rem;
+			text-transform: uppercase;
+			letter-spacing: .12em;
+		}
+
+		.section {
+			padding: clamp(48px, 7vw, 96px) 0;
+			border-bottom: 1px solid var(--line);
+		}
+
+		.hero {
+			padding: clamp(80px, 10vw, 140px) 0 clamp(60px, 6vw, 100px);
+			background: radial-gradient(1000px 400px at 80% -10%, rgba(14, 165, 233, .15), transparent 60%),
+				radial-gradient(800px 400px at 5% -5%, rgba(103, 232, 249, .12), transparent 60%);
+			text-align: left;
+		}
+
+		.hero h1 {
+			margin-bottom: .4em;
+		}
+
+		.hero p {
+			color: var(--muted);
+			margin-bottom: 1.2em;
+			max-width: 65ch;
+		}
+
+		.hero-cta {
+			display: flex;
+			gap: 12px;
+			flex-wrap: wrap;
+		}
+
+		.btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 10px 16px;
+			border-radius: 10px;
+			font-weight: 600;
+			border: 1px solid transparent;
+		}
+
+		.btn.primary {
+			background: linear-gradient(90deg, var(--ink), var(--ink-2));
+			color: #001018;
+			box-shadow: var(--shadow);
+		}
+
+		.btn.ghost {
+			border-color: #163147;
+			color: var(--ink-2);
+			background: rgba(14, 165, 233, .08);
+		}
+
+		.chart-block {
+			width: 100%;
+			height: 420px;
+			border-radius: var(--radius);
+			background: var(--card);
+			box-shadow: var(--shadow);
+			margin-top: 24px;
+		}
+
+		.grid-3 {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+			gap: 18px;
+		}
+
+		.card {
+			background: var(--card);
+			border: 1px solid #14223a;
+			border-radius: var(--radius);
+			padding: 20px;
+			box-shadow: var(--shadow);
+		}
+
+		.card p {
+			color: var(--muted);
+		}
+
+		footer {
+			padding: 30px 0;
+			color: var(--muted);
+			text-align: center;
+			font-size: .9rem;
+		}
+
+		footer a {
+			color: var(--muted);
+			margin: 0 8px;
+		}
+	</style>
+</head>
+
+<body>
+	<header class="site">
+		<div class="container nav">
+			<div class="brand">
+				<div class="brand-logo" aria-hidden="true"></div>
+				<strong>AtlasDash</strong>
+			</div>
+			<nav>
+				<a href="#what">About</a>
+				<a href="#dashboards">Dashboards</a>
+				<a href="#tech">Tech</a>
+				<a href="#ecosystem">Ecosystem</a>
+			</nav>
+			<div class="hero-cta">
+				<a class="btn ghost" href="#docs">Docs</a>
+				<a class="btn primary" href="#launch">Launch</a>
+			</div>
+		</div>
+	</header>
+
+	<main id="main">
+		<!-- Hero -->
+		<section class="hero">
+			<div class="container">
+				<h1>AtlasDash<br />The Star Atlas Dashboard.</h1>
+				<p>Your gateway to analytics across the Star Atlas economy, markets, and governance.<br />
+					From production to policy, AtlasDash delivers the full picture of Star Atlas.<br />
+					<strong>See the metaverse in motion.</strong>
+				</p>
+				<div class="hero-cta">
+					<a class="btn primary" href="#launch">Launch AtlasDash</a>
+					<a class="btn ghost" href="#what">Learn More</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- Chart 1 -->
+		<section class="section" id="chart1">
+			<div class="container">
+				<h2>The Galaxy at a Glance</h2>
+				<p>Every day, thousands of explorers, traders, and builders traverse the Star Atlas universe.
+					This chart captures their collective pulse — a view of daily activity that reveals how alive the
+					metaverse truly is.</p>
+				<div id="dailyUsersChart" class="chart-block"></div>
+			</div>
+		</section>
+
+		<!-- What Is AtlasDash -->
+		<section id="what" class="section">
+			<div class="container">
+				<h2>What Is AtlasDash</h2>
+				<p>AtlasDash is Aephia Industries’ analytics platform — built to make Star Atlas data accessible,
+					transparent, and actionable.
+					It connects on-chain datasets with rich visual dashboards that uncover how the galaxy’s economy,
+					players, and governance evolve together.
+					Whether you’re a strategist, a builder, or a data enthusiast, AtlasDash turns complexity into
+					clarity.</p>
+			</div>
+		</section>
+
+		<!-- Dashboards -->
+		<section id="dashboards" class="section">
+			<div class="container">
+				<h2>Explore the Dashboards</h2>
+				<div class="grid-3">
+					<div class="card">
+						<h3>🪙 Economy Watch</h3>
+						<p>Monitor liquidity, token flows, and asset values across Star Atlas markets.</p>
+						<a href="#">→ View Dashboard</a>
+					</div>
+					<div class="card">
+						<h3>⚙️ Production & Supply</h3>
+						<p>Track shipbuilding output, resource demand, and crafting metrics across factions.</p>
+						<a href="#">→ View Dashboard</a>
+					</div>
+					<div class="card">
+						<h3>🏛️ Governance Analytics</h3>
+						<p>Follow participation rates, voting patterns, and proposal outcomes shaping the DAO.</p>
+						<a href="#">→ View Dashboard</a>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Chart 2 -->
+		<section class="section" id="chart2">
+			<div class="container">
+				<h2>The Economic Pulse</h2>
+				<p>The Star Atlas economy never stands still.
+					Here, you can see how ATLAS volume shifts over time — reflecting the flow of trade, the movement of
+					markets, and the rhythm of opportunity throughout the metaverse.</p>
+				<div id="atlasVolumeChart" class="chart-block"></div>
+			</div>
+		</section>
+
+		<!-- Under the Hood -->
+		<section id="tech" class="section">
+			<div class="container">
+				<h2>Under the Hood</h2>
+				<p>AtlasDash is powered by a precision-engineered data pipeline connecting:</p>
+				<ul>
+					<li>Flipside Crypto’s Snowflake share for verified on-chain data</li>
+					<li>Cloudflare Workers + R2 for fast, cost-efficient caching</li>
+					<li>ECharts & PixiJS for smooth, interactive visualizations</li>
+				</ul>
+				<p>Every dashboard is optimized for accuracy, scalability, and speed — because seeing the big picture
+					should never require waiting for it to load.</p>
+			</div>
+		</section>
+
+		<!-- Why It Matters -->
+		<section class="section">
+			<div class="container">
+				<h2>Why It Matters</h2>
+				<p>Star Atlas is more than a game — it’s an emerging digital economy.
+					AtlasDash helps you understand how it evolves, who drives it, and where opportunity lies.
+					Whether you’re analyzing markets, crafting strategies, or shaping policy through governance,
+					AtlasDash provides the clarity you need to act with confidence.</p>
+			</div>
+		</section>
+
+		<!-- Aephia Ecosystem -->
+		<section id="ecosystem" class="section">
+			<div class="container">
+				<h2>Part of the Aephia Ecosystem</h2>
+				<div class="grid-3">
+					<div class="card">
+						<h3>AstralPass</h3>
+						<p>Wallet and Discord verification for DACs, with rule-based role assignment and on-chain
+							checks.</p>
+						<a href="#">Learn more →</a>
+					</div>
+					<div class="card">
+						<h3>AtlasBase</h3>
+						<p>Community hub and news tracker — stay aligned with the latest Star Atlas signals.</p>
+						<a href="#">Learn more →</a>
+					</div>
+					<div class="card">
+						<h3>TradePath</h3>
+						<p>Plan optimal trade routes and gather requirements across star systems with clear, actionable
+							steps.</p>
+						<a href="#">Learn more →</a>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- CTA -->
+		<section class="section" id="cta">
+			<div class="container" style="text-align:center;">
+				<h2>Ready to Explore?</h2>
+				<p>Access dashboards, study the data, and see the metaverse in motion.</p>
+				<div class="hero-cta" style="justify-content:center; margin-top:1rem;">
+					<a class="btn primary" href="#launch">Launch AtlasDash</a>
+					<a class="btn ghost" href="#docs">Read Documentation</a>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<footer>
+		<div class="container">
+			<p>© 2025 Aephia Industries · Built by the Community, for the Community.
+				<a href="#">About</a>·<a href="#">Documentation</a>·<a href="#">GitHub</a>·<a href="#">Terms</a>·<a
+					href="#">Contact</a>
+			</p>
+		</div>
+	</footer>
+
+	<script>
+		// --- Chart 1: Daily Active Users (sample data) ---
+		const chart1 = echarts.init(document.getElementById('dailyUsersChart'));
+		const days = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`);
+		const dau = days.map(() => Math.round(Math.random() * 8000 + 2000));
+		chart1.setOption({
+			textStyle: { color: '#cfe8f5' },
+			grid: { left: 50, right: 20, top: 30, bottom: 40 },
+			tooltip: { trigger: 'axis' },
+			xAxis: { type: 'category', data: days, axisLine: { lineStyle: { color: '#29445d' } } },
+			yAxis: { type: 'value', axisLine: { lineStyle: { color: '#29445d' } } },
+			series: [{
+				type: 'bar', data: dau,
+				itemStyle: {
+					color: new echarts.graphic.LinearGradient(0, 0, 0, 1,
+						[{ offset: 0, color: '#67e8f9' }, { offset: 1, color: '#0ea5e9' }])
+				}
+			}]
+		});
+
+		// --- Chart 2: ATLAS Volume Traded (sample data) ---
+		const chart2 = echarts.init(document.getElementById('atlasVolumeChart'));
+		const vol = days.map(() => Math.round(Math.random() * 120000 + 30000));
+		chart2.setOption({
+			textStyle: { color: '#cfe8f5' },
+			grid: { left: 50, right: 20, top: 30, bottom: 40 },
+			tooltip: { trigger: 'axis' },
+			xAxis: { type: 'category', data: days, axisLine: { lineStyle: { color: '#29445d' } } },
+			yAxis: { type: 'value', axisLine: { lineStyle: { color: '#29445d' } } },
+			series: [{
+				type: 'line', data: vol, smooth: true, areaStyle: {
+					color: new echarts.graphic.LinearGradient(0, 0, 0, 1,
+						[{ offset: 0, color: 'rgba(14,165,233,.35)' }, { offset: 1, color: 'rgba(103,232,249,.05)' }])
+				},
+				lineStyle: { color: '#67e8f9', width: 2 }
+			}]
+		});
+
+		window.addEventListener('resize', () => {
+			chart1.resize();
+			chart2.resize();
+		});
+	</script>
+</body>
+
+</html>

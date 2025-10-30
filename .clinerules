@@ -1,0 +1,210 @@
+# AtlasDash Project Rules
+
+## Project Intelligence
+
+### Critical Implementation Paths
+
+#### Chart Integration Pattern
+When adding new charts to any page:
+1. Create chart container div with unique ID: `<div id="chartName" class="chart-block"></div>`
+2. Initialize after ECharts CDN loads
+3. Use CSS variables for theming: `getComputedStyle(document.documentElement).getPropertyValue('--accent')`
+4. Always add resize handler: `window.addEventListener('resize', () => chart.resize())`
+5. Set `backgroundColor: 'transparent'` for all charts
+
+#### Multi-Page Application Setup
+When adding new pages:
+1. Create HTML file in root directory (e.g., `ecosystem.html`)
+2. Update `vite.config.ts` rollupOptions.input with new entry
+3. Include same navigation structure from index.html
+4. Link to `/src/style.css` for global styles
+5. Import page-specific TypeScript module if needed
+
+#### Type Definition Pattern
+All data structures follow this pattern:
+```typescript
+// 1. Define row interface
+interface XRow {
+  FIELD: string;  // Use UPPERCASE for field names from API
+}
+
+// 2. Extend QueriedData
+interface XResponseData extends QueriedData<XRow> {
+  rows: XRow[];
+}
+```
+
+### User Preferences & Workflow
+
+#### Code Style
+- **TypeScript**: Strict mode, no `any` types unless absolutely necessary
+- **Naming**: 
+  - Components: `kebab-case.ts` (atlas-chart-dau.ts)
+  - Types: `snake_case.ts` (queried_data.ts)
+  - Variables: `camelCase`
+  - Constants: `UPPER_SNAKE_CASE`
+- **Imports**: Explicit imports, no barrel exports
+- **Comments**: JSDoc for public APIs, inline comments for complex logic
+
+#### File Organization
+- Keep HTML files in root directory
+- TypeScript source in `src/`
+- Types in `src/types/`
+- Components in `src/components/` (when created)
+- Charts in `src/charts/` (when created)
+- Data fetching in `src/data/` (when created)
+
+#### Development Workflow
+1. Always run `npm run dev` for development
+2. Test in browser before committing
+3. Update Memory Bank when making significant changes
+4. Keep inline scripts minimal - move to TypeScript modules
+
+### Project-Specific Patterns
+
+#### ECharts Configuration Standard
+All charts must use this base configuration:
+```typescript
+{
+  backgroundColor: 'transparent',
+  tooltip: {
+    trigger: 'axis',
+    backgroundColor: '#fff',
+    borderColor: accent,
+    borderWidth: 1,
+    textStyle: { color: '#111' }
+  },
+  grid: { left: 50, right: 20, top: 30, bottom: 40 }
+}
+```
+
+#### CSS Variable Usage
+Always use CSS variables for theming:
+- `--accent`: Primary purple (#7c3aed)
+- `--accent-light`: Light purple (#a78bfa)
+- `--bg-primary`: Background color
+- `--text-primary`: Text color
+
+Never hardcode colors in JavaScript - always read from CSS variables.
+
+#### Navigation Structure
+All pages must include this navbar structure:
+```html
+<nav class="navbar">
+  <div aria-label="AtlasDash" class="navbar-brand">AtlasDash</div>
+  <ul class="navbar-links">
+    <!-- Links here -->
+  </ul>
+</nav>
+```
+
+### Known Challenges
+
+#### Web Components Integration
+- **Challenge**: Need to select helper library
+- **Options**: lit-html (lightweight), haunted (hooks-based), custom utilities
+- **Decision Pending**: Waiting for user preference
+- **Workaround**: Use vanilla Web Components API until decided
+
+#### Data Source Integration
+- **Challenge**: Star Atlas API endpoints not yet integrated
+- **Current State**: Using mock data generation
+- **Next Step**: Research available APIs and authentication
+- **Temporary Solution**: Generate realistic mock data for prototyping
+
+#### Inline Scripts Migration
+- **Issue**: Chart code currently in HTML `<script>` tags
+- **Priority**: High - needs refactoring soon
+- **Plan**: Extract to TypeScript modules with proper imports
+- **Blocker**: None - can start immediately
+
+### Evolution of Project Decisions
+
+#### Build System Choice
+- **Initial**: Standard Vite
+- **Current**: rolldown-vite@7.1.14 (Rolldown-based fork)
+- **Reason**: Better performance for MPA builds
+- **Impact**: Faster build times, same API as Vite
+
+#### Component Strategy
+- **Initial Consideration**: React, Vue, or Svelte
+- **Decision**: Native Web Components
+- **Reason**: No framework lock-in, smaller bundle, modern browser support
+- **Trade-off**: More boilerplate, but better long-term maintainability
+
+#### Chart Library Choice
+- **Considered**: Chart.js, D3.js, Recharts
+- **Decision**: Apache ECharts
+- **Reason**: Rich features, good TypeScript support, excellent documentation
+- **Delivery**: CDN (not bundled) to reduce bundle size
+
+### Tool Usage Patterns
+
+#### Vite Development Server
+- **Command**: `npm run dev` or `npm start`
+- **Port**: Default (usually 5173)
+- **HMR**: Enabled for fast development
+- **Usage**: Always run during development
+
+#### TypeScript Compilation
+- **Command**: `npm run build` (includes tsc)
+- **Target**: ES2022
+- **Strict Mode**: Enabled
+- **Output**: Bundled with Vite build
+
+#### Browser Testing
+- **Primary**: Chrome/Edge (Chromium)
+- **Secondary**: Firefox, Safari
+- **Mobile**: Test responsive design
+- **Tools**: DevTools, Lighthouse for performance
+
+### Memory Bank Maintenance
+
+#### When to Update
+1. After completing major features
+2. When architectural decisions change
+3. When discovering new patterns
+4. When user requests with "update memory bank"
+5. Before starting complex new work
+
+#### What to Update
+- **activeContext.md**: Current work, recent changes, next steps
+- **progress.md**: Completed items, remaining work, known issues
+- **systemPatterns.md**: New patterns discovered
+- **.clinerules**: New project intelligence (this file)
+
+#### Update Process
+1. Review all Memory Bank files
+2. Mark completed items in progress.md
+3. Update activeContext.md with current state
+4. Document new patterns in systemPatterns.md
+5. Add learnings to .clinerules
+
+### Quick Reference
+
+#### Common Commands
+```bash
+npm run dev      # Start development server
+npm run build    # Build for production
+npm run preview  # Preview production build
+```
+
+#### File Locations
+- HTML pages: Root directory
+- TypeScript: `src/`
+- Styles: `src/style.css`
+- Types: `src/types/`
+- Memory Bank: `memory-bank/`
+
+#### Key Files
+- `vite.config.ts`: Build configuration
+- `tsconfig.json`: TypeScript settings
+- `package.json`: Dependencies and scripts
+- `index.html`: Landing page (main entry)
+
+### Project Context
+- **Organization**: Aephia Industries
+- **Product**: AtlasDash analytics platform
+- **Target**: Star Atlas metaverse community
+- **Stage**: Early development / Prototype
+- **Priority**: Establish solid architecture before scaling

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="icon" type="image/svg+xml" href="/vite.svg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>atlasdash-site</title>
+		<link rel="stylesheet" href="/src/style.css" />
+	</head>
+	<body>
+		
+		<div class="content-wrapper">
+		<nav class="navbar">
+			<div aria-label="AtlasDash" class="navbar-brand">AtlasDash</div>
+			<ul class="navbar-links">
+				<li><a href="#ecosystem">Ecosystem</a></li>
+				<li><a href="#mining">Mining</a></li>
+				<li><a href="#trading">Trading</a></li>
+				<li><a href="#tokens">Tokens</a></li>
+			</ul>
+		</nav>
+	
+		<!-- <span class="eyebrow">Data, Decoded. Insights, Delivered</span> -->
+		<main>
+			<!-- Hero -->
+			<section class="hero">
+				<div class="container">
+					<h1>Your <strong>Star Atlas</strong> Dashboard</h1>
+					<p>From markets and production to governance and beyond — AtlasDash brings the universe’s data together in one
+						clear view.</p>
+				</div>
+			</section>
+			
+			<!-- Chart 1 -->
+			<section class="section">
+				<div class="container">
+					<header class="section__header">
+						<h2>Daily Active Users</h2>
+						<div class="section__label">Pill label</div>
+					</header>
+					
+					<div id="dailyUsersChart" class="chart-block"></div>
+				</div>
+			</section>
+
+			<!-- Galaxy at a Glance -->
+			<section class="section">
+				<div class="container">
+					<h2>The Galaxy at a Glance</h2>
+					<p class="lead">Every day, thousands of explorers, traders, and builders traverse the Star Atlas universe.
+						This chart captures their collective pulse — a view of daily activity that reveals how alive the metaverse
+						truly is.</p>
+					<div id="dailyUsersChart" class="chart-block"></div>
+				</div>
+			</section>
+			
+			<!-- What Is AtlasDash -->
+			<section id="what" class="section">
+				<div class="container">
+					<h2>What Is AtlasDash</h2>
+					<p>AtlasDash is Aephia Industries’ analytics platform — built to make Star Atlas data accessible,
+						transparent, and actionable.
+						It connects on-chain datasets with rich visual dashboards that uncover how the galaxy’s economy,
+						players, and governance evolve together.
+						Whether you’re a strategist, a builder, or a data enthusiast, AtlasDash turns complexity into
+						clarity.</p>
+				</div>
+			</section>
+			
+			<!-- Dashboards Overview -->
+			<section class="section">
+				<div class="container">
+					<h2>Explore the Dashboards</h2>
+					<p class="lead">AtlasDash organizes the Star Atlas data landscape into three powerful collections — each
+						offering a unique vantage point on the metaverse.</p>
+			
+					<div class="grid-3">
+						<div class="card">
+							<h3>🌌 Ecosystem</h3>
+							<p>Dashboards that look from the outside-in:
+								Galactic Marketplace, DAC activity, Daily Active Users, Fleet Rentals, and more.
+								A wide-angle view of everything shaping Star Atlas participation.</p>
+							<a href="ecosystem.html">→ View Ecosystem Dashboards</a>
+						</div>
+			
+						<div class="card">
+							<h3>⚙️ Game Economy</h3>
+							<p>Analyze core gameplay and economic loops:
+								Local Marketplaces, Faction vs Faction stats, DAC vs DAC comparisons, Mining, Scanning, Crafting,
+								and other gameloops that fuel the economy.</p>
+							<a href="economy.html">→ View Game Economy Dashboards</a>
+						</div>
+			
+						<div class="card">
+							<h3>🪙 Tokenomics</h3>
+							<p>Dive deep into Star Atlas token flows:
+								ATLAS & POLIS supply, inflow and outflow tracking, Locker data, and ecosystem-wide financial
+								activity — visualized with clarity.</p>
+							<a href="tokenomics.html">→ View Tokenomics Dashboards</a>
+						</div>
+					</div>
+				</div>
+			</section>
+			
+			<!-- Chart 2 -->
+			<section class="section">
+				<div class="container">
+					<h2>The Economic Pulse</h2>
+					<p class="lead">The Star Atlas economy never stands still.
+						Here, you can see how ATLAS volume shifts over time — reflecting trade flow, market movement, and
+						opportunity across the metaverse.</p>
+					<div id="atlasVolumeChart" class="chart-block"></div>
+				</div>
+			</section>
+
+
+		</main>
+		</div>
+		<script type="module" src="/src/main.ts"></script>
+	</body>
+</html>
