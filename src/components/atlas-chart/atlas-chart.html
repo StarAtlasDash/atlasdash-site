@@ -1,0 +1,29 @@
+<div class="chart-shell">
+	<header class="chart-header">
+		<div class="title-row">
+			<h3 class="chart-title"></h3>
+			<button class="info-button" type="button" aria-label="More info" aria-expanded="false" hidden>
+				<span class="info-icon" aria-hidden="true">i</span>
+			</button>
+		</div>
+		<div class="chart-label"></div>
+	</header>
+	<div class="chart-area">
+		<div class="chart-canvas"></div>
+	</div>
+	<div class="chart-description">
+		<slot name="description"></slot>
+		<p class="description-text"></p>
+	</div>
+	<div class="info-popover" role="dialog" aria-label="Chart info" hidden>
+		<div class="info-card">
+			<div class="info-header">
+				<span class="info-title">Details</span>
+				<button class="info-close" type="button" aria-label="Close info">Close</button>
+			</div>
+			<div class="info-body">
+				<slot name="info"></slot>
+			</div>
+		</div>
+	</div>
+</div>

@@ -14,9 +14,8 @@
 			<div aria-label="AtlasDash" class="navbar-brand">AtlasDash</div>
 			<ul class="navbar-links">
 				<li><a href="#ecosystem">Ecosystem</a></li>
-				<li><a href="#mining">Mining</a></li>
-				<li><a href="#trading">Trading</a></li>
-				<li><a href="#tokens">Tokens</a></li>
+				<li><a href="#economy">Game Economy</a></li>
+				<li><a href="#tokens">Tokenomics</a></li>
 			</ul>
 		</nav>
 	
@@ -24,46 +23,66 @@
 		<main>
 			<!-- Hero -->
 			<section class="hero">
-				<div class="container">
-					<h1>Your <strong>Star Atlas</strong> Dashboard</h1>
-					<p>From markets and production to governance and beyond — AtlasDash brings the universe’s data together in one
+					<h1><span>Your</span> <span class="highlight">Star Atlas</span> <span>Dashboard</span></h1>
+					<p>From markets and production to governance and beyond — AtlasDash brings the universe's data together in one
 						clear view.</p>
-				</div>
 			</section>
 			
 			<!-- Chart 1 -->
 			<section class="section">
-				<div class="container">
-					<header class="section__header">
-						<h2>Daily Active Users</h2>
-						<div class="section__label">Pill label</div>
-					</header>
-					
-					<div id="dailyUsersChart" class="chart-block"></div>
+				<header class="section__header">
+					<h2>The Galaxy at a Glance</h2>
+				</header>
+				<p class="lead">Every day, thousands of explorers, traders, and builders traverse the Star Atlas universe.
+					This chart captures their collective pulse — a view of daily activity that reveals how alive the metaverse
+					truly is.
+				</p>
+				<div class="chart">
+					<atlas-chart
+						id="dailyUsersChart"
+						data-chart-id="line-chart"
+						class="chart-block"
+					></atlas-chart>
 				</div>
 			</section>
 
-			<!-- Galaxy at a Glance -->
+			<!-- Chart 2 -->
 			<section class="section">
-				<div class="container">
-					<h2>The Galaxy at a Glance</h2>
-					<p class="lead">Every day, thousands of explorers, traders, and builders traverse the Star Atlas universe.
-						This chart captures their collective pulse — a view of daily activity that reveals how alive the metaverse
-						truly is.</p>
-					<div id="dailyUsersChart" class="chart-block"></div>
+				<header class="section__header">
+					<h2>The Economic Pulse</h2>
+				</header>
+				<p class="lead">The Game Economy dashboards dive into the micro-scale engine of Star Atlas — the in-game activities that generate value
+				and resources. Track how factions compete, DACs operate, and gameplay loops like mining, scanning, and crafting shape
+				the flow of goods and production. This section reveals the forces that make Star Atlas more than a game — a functioning
+				digital economy.
+				</p>
+				<div class="chart">
+					<header class="section__header">
+						<h3 class="chart__header">SAGE Trade</h3>
+						<div class="section__label">Game Economy</div>
+					</header>
+					<div id="chart2" class="chart-block"></div>
+					<footer class="caption-footer">
+						<p class="chart-footnote">...</p>
+					</footer>
 				</div>
 			</section>
 			
-			<!-- What Is AtlasDash -->
-			<section id="what" class="section">
-				<div class="container">
-					<h2>What Is AtlasDash</h2>
-					<p>AtlasDash is Aephia Industries’ analytics platform — built to make Star Atlas data accessible,
-						transparent, and actionable.
-						It connects on-chain datasets with rich visual dashboards that uncover how the galaxy’s economy,
-						players, and governance evolve together.
-						Whether you’re a strategist, a builder, or a data enthusiast, AtlasDash turns complexity into
-						clarity.</p>
+			<!-- Chart 3 -->
+			<section class="section">
+				<header class="section__header">
+					<h2>Currents of Value</h2>
+				</header>
+				<p class="lead">The Tokenomics dashboards analyze the currencies that drive it all — ATLAS, POLIS, and z.ink. Explore their movement
+				across wallets, inflows and outflows, and how lockers and staking mechanisms shape the power structure of the ecosystem.
+				This is where in-game economics meets blockchain reality.
+				</p>
+				<div class="chart">
+					<atlas-chart
+						id="atlasEmissionsChart"
+						data-chart-id="atlas-emissions"
+						class="chart-block"
+					></atlas-chart>
 				</div>
 			</section>
 			
@@ -104,16 +123,12 @@
 			
 			<!-- Chart 2 -->
 			<section class="section">
-				<div class="container">
-					<h2>The Economic Pulse</h2>
-					<p class="lead">The Star Atlas economy never stands still.
-						Here, you can see how ATLAS volume shifts over time — reflecting trade flow, market movement, and
-						opportunity across the metaverse.</p>
-					<div id="atlasVolumeChart" class="chart-block"></div>
-				</div>
+				<header class="section__header">
+					<h2>About</h2>
+				</header>
+				<p class="lead"></p>
+				<div id="atlasVolumeChart" class="chart-block"></div>
 			</section>
-
-
 		</main>
 		</div>
 		<script type="module" src="/src/main.ts"></script>

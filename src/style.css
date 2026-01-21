@@ -192,6 +192,10 @@ main > .section {
 	-webkit-text-fill-color: transparent;
 	margin: 0 auto;
 	max-width: 16ch;
+	
+	> .highlight {
+		font-weight: bold;
+	}
 }
 
 .hero p {
@@ -204,7 +208,7 @@ main > .section {
 
 /* --- Sections --- */
 .section {
-	padding: clamp(3rem, 8vw, 4rem) 0;
+	padding: clamp(2rem, 6vw, 3rem) 0;
 	border-bottom: 1px solid var(--line);
 	background-color: var(--surface);
 }
@@ -215,7 +219,7 @@ main > .section {
 	align-items: center;
 	justify-content: space-between;
 	gap: 0.5rem;
-	margin: 1rem 0 ;
+	margin: 1rem 0;
 
 	h2 {
 		margin: 0;
@@ -235,6 +239,13 @@ main > .section {
 	white-space: nowrap;
 }
 
+.caption-footer {
+	text-align: center;
+	font-size: 0.9rem;
+	color: var(--muted);
+	margin: 0 2rem;
+}
+
 h2 {
 	font-size: clamp(1.5rem, 2vw + 1rem, 1.9rem);
 	margin-top: 0.5em;
@@ -246,9 +257,9 @@ p.lead {
 	color: var(--muted);
 	font-size: 1.05rem;
 	max-width: 70ch;
-	margin-inline: auto;
+	/* margin-inline: auto; */
 	/* text-align: center; */
-	padding: 0 1rem;
+	/* padding: 0 1rem; */
 }
 
 .grid-3 {
@@ -285,14 +296,6 @@ p.lead {
 	box-shadow: var(--shadow); */
 	
 	/* background: var(--bg); */
-}
-
-/* --- Footer --- */
-footer {
-	text-align: center;
-	padding: 40px 0;
-	font-size: 0.9rem;
-	color: var(--muted);
 }
 
 /* --- Responsive Tweaks --- */

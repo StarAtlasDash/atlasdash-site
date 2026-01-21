@@ -1,4 +1,6 @@
-interface QueriedData<T> {
+import type { QueryRow } from './query';
+
+export interface QueriedData<T> {
 	columns: {
 		name: string;
 		type: string;
@@ -7,11 +9,6 @@ interface QueriedData<T> {
 	rowCount: number;
 }
 
-export interface DAURow {
-	DATE: string; // e.g. "2025-10-26"
-	DAU: string; // stored as string, but numeric
-}
-
-export interface DAUResponseData extends QueriedData<DAURow> {
-	rows: DAURow[];
+export interface QueryResponseData extends QueriedData<QueryRow> {
+	rows: QueryRow[];
 }

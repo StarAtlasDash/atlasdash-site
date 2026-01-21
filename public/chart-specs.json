@@ -1,0 +1,102 @@
+[
+  {
+    "id": "dau-stacked",
+    "title": "Daily Active Users",
+    "label": "Ecosystem",
+    "chartType": "stacked-bar",
+    "xWindowDays": 365,
+    "query": {
+      "source": "flipside",
+      "dataset": "sa-activity"
+    },
+    "xAxis": {
+      "field": "DATE",
+      "type": "category",
+      "labelDensity": 0.85
+    },
+    "sort": {
+      "field": "DATE",
+      "order": "asc",
+      "type": "date"
+    },
+    "series": [
+      {
+        "name": "DAU in SAGE",
+        "field": "ACTIVE_PLAYER_PROFILES_SB",
+        "type": "bar",
+        "stack": "total"
+      },
+      {
+        "name": "DAU in rest of Ecosystem",
+        "derive": {
+          "op": "subtract",
+          "fields": [
+            "ACTIVE_USERS_ALL",
+            "ACTIVE_PLAYER_PROFILES_SB"
+          ]
+        },
+        "type": "bar",
+        "stack": "total"
+      }
+    ],
+    "descriptionHtml": "Daily Active Users (DAU) in SAGE represents the number of unique wallets playing SAGE: Starbased on a given day. DAU in Ecosystem represents the wallets interacting with the broader Star Atlas ecosystem (e.g., Lockers, Marketplace). <em>[Data as of yesterday]</em>",
+    "infoHtml": "Multi-paragraph context and methodology go here.<br/>This slot is optional and only shows when provided."
+  },
+  {
+    "id": "line-chart",
+    "title": "Daily Active Users",
+    "label": "Ecosystem",
+    "chartType": "line",
+    "xWindowDays": 365,
+    "query": {
+      "source": "flipside",
+      "dataset": "dau-in-sa"
+    },
+    "xAxis": {
+      "field": "DATE",
+      "type": "category",
+      "labelDensity": 1
+    },
+    "sort": {
+      "field": "DATE",
+      "order": "asc",
+      "type": "date"
+    },
+    "seriesFromField": {
+      "nameField": "NAME",
+      "valueField": "WALLETS",
+      "type": "line"
+    },
+    "descriptionHtml": "Daily Active Users (DAU) in SAGE represents the number of unique wallets playing SAGE: Starbased on a given day. DAU in Ecosystem represents the wallets interacting with the broader Star Atlas ecosystem (e.g., Lockers, Marketplace). <em>[Data as of yesterday]</em>",
+    "infoHtml": "Multi-paragraph context and methodology go here.<br/>This slot is optional and only shows when provided."
+  },
+  {
+    "id": "atlas-emissions",
+    "title": "ATLAS Emissions",
+    "label": "Tokenomics",
+    "chartType": "stacked-bar",
+    "xWindowDays": 90,
+    "query": {
+      "source": "flipside",
+      "dataset": "atlas-emission"
+    },
+    "xAxis": {
+      "field": "DATE",
+      "type": "category",
+      "labelDensity": 1
+    },
+    "sort": {
+      "field": "DATE",
+      "order": "asc",
+      "type": "date"
+    },
+    "seriesFromColumns": {
+      "fields": [
+        { "field": "FF", "name": "Faction Fleet", "type": "bar", "stack": "total" },
+        { "field": "STARBASED", "name": "SAGE (Loyalty Points)", "type": "bar", "stack": "total" },
+        { "field": "FIC", "name": "SAGE (FICs)", "type": "bar", "stack": "total" }
+      ]
+    },
+    "description": "ATLAS Emissions through Faction Fleet (SCORE) and SAGE Starbased. In Starbased players claim ATLAS for accumulated Loyalty Points and sell Faction Infrastructure Contracts (FICSs) to NPC bidders."
+  }
+]
