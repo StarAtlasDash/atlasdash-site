@@ -32,11 +32,13 @@ Specs are loaded at runtime from `public/chart-specs.json` and applied to `<atla
     "labelDensity": 0.85
   },
   "xWindowDays": 365,
+  "enableSecondaryAxis": false,
   "yAxis": {
     "label": "Wallets",
     "min": 0,
     "max": 1000
   },
+  "yAxes": [],
   "series": [],
   "seriesFromField": null,
   "seriesFromColumns": null,
@@ -66,9 +68,15 @@ Specs are loaded at runtime from `public/chart-specs.json` and applied to `<atla
   - `label`: axis label (optional)
   - `labelDensity`: controls how many labels to show relative to width (lower = fewer labels). Allowed range: `0.1`–`1.0`. The last label is always shown. Internally this is scaled to allow denser labeling without exposing values above `1.0`.
 - `xWindowDays` (number, optional): Show only the most recent N days based on the max date in the dataset. Applied only when the X-axis column type is `date`.
+- `enableSecondaryAxis` (boolean, optional): When `true`, allows multiple Y axes (using `yAxes` or `yAxisIndex`). Default is `false`, which forces a single axis even if series set `yAxisIndex`.
 - `yAxis` (object, optional):
   - `label`: axis label
   - `min` / `max`: numeric bounds
+- `yAxes` (array, optional): Multiple axes (left/right). Only used when `enableSecondaryAxis` is `true`. Each entry supports:
+  - `label`: axis label
+  - `min` / `max`: numeric bounds
+  - `position`: `left` or `right` (defaults to left for the first axis, right for the second)
+If `enableSecondaryAxis` is `true` and `yAxes` is omitted, a secondary right axis is created automatically when any series uses `yAxisIndex: 1`.
 - `series` (array, optional): Explicit series definitions (see below).
 - `seriesFromField` (object, optional): Auto‑series builder when each row contains a `NAME`/`WALLETS` style pair.
 - `seriesFromColumns` (object, optional): Select specific columns as datasets and optionally rename them.
@@ -88,7 +96,8 @@ Use `series` when each series maps to a column or a derived value.
       "name": "DAU in SAGE",
       "field": "ACTIVE_PLAYER_PROFILES_SB",
       "type": "bar",
-      "stack": "total"
+      "stack": "total",
+      "yAxisIndex": 0
     },
     {
       "name": "DAU in rest of Ecosystem",
@@ -97,13 +106,16 @@ Use `series` when each series maps to a column or a derived value.
         "fields": ["ACTIVE_USERS_ALL", "ACTIVE_PLAYER_PROFILES_SB"]
       },
       "type": "bar",
-      "stack": "total"
+      "stack": "total",
+      "yAxisIndex": 0
     }
   ]
 }
 ```
 
 `derive.op` supports: `add`, `subtract`, `multiply`, `divide`.
+`yAxisIndex` targets a specific axis when using `enableSecondaryAxis` (0 = first axis, 1 = second). It is ignored when `enableSecondaryAxis` is `false`.
+When `chartType` is `stacked-bar`, bar series default to `stack: "total"` if `stack` is not provided. Non‑bar series (like a line overlay) do not stack unless explicitly set.
 
 ## Series From Field (Pivot)
 Use `seriesFromField` when the dataset has one row per date and series name, for example:
@@ -118,6 +130,7 @@ Use `seriesFromField` when the dataset has one row per date and series name, for
   }
 }
 ```
+Use `yAxisIndex` here to route all generated series to a specific axis.
 
 ## Series From Columns (Selective)
 Use `seriesFromColumns` when each column is a dataset, but you only want specific columns and/or custom names.
@@ -133,6 +146,7 @@ Use `seriesFromColumns` when each column is a dataset, but you only want specifi
   }
 }
 ```
+Each field can also set `yAxisIndex` to target a secondary axis.
 
 ## Example: Stacked Bar (DAU Split)
 ```json
@@ -186,7 +200,7 @@ Use `seriesFromColumns` when each column is a dataset, but you only want specifi
 }
 ```
 
-## Example: Column‑Driven Stacked Bar (ATLAS Emissions)
+## Example: Column‑Driven Stacked Bar (ATLAS Emissions) + Line Overlay
 ```json
 {
   "id": "atlas-emissions",
@@ -204,6 +218,9 @@ Use `seriesFromColumns` when each column is a dataset, but you only want specifi
       { "field": "FIC", "name": "SAGE (FICs)", "type": "bar", "stack": "total" }
     ]
   },
+  "series": [
+    { "name": "ATLAS 3M Avg", "field": "ATLAS_3M_AVG", "type": "line" }
+  ],
   "description": "ATLAS Emissions through Faction Fleet (SCORE) and SAGE Starbased. In Starbased players claim ATLAS for accumulated Loyalty Points and sell Faction Infrastructure Contracts (FICSs) to NPC bidders."
 }
 ```

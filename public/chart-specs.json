@@ -97,6 +97,9 @@
         { "field": "FIC", "name": "SAGE (FICs)", "type": "bar", "stack": "total" }
       ]
     },
+    "series": [
+      { "name": "ATLAS 3M Avg", "field": "ATLAS_3M_AVG", "type": "line" }
+    ],
     "description": "ATLAS Emissions through Faction Fleet (SCORE) and SAGE Starbased. In Starbased players claim ATLAS for accumulated Loyalty Points and sell Faction Infrastructure Contracts (FICSs) to NPC bidders."
   }
 ]

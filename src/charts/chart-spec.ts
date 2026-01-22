@@ -11,6 +11,13 @@ export interface ChartAxisSpec {
 	labelDensity?: number;
 }
 
+export interface ChartYAxisSpec {
+	label?: string;
+	min?: number;
+	max?: number;
+	position?: 'left' | 'right';
+}
+
 export interface ChartSeriesSpec {
 	name: string;
 	field?: string;
@@ -60,11 +67,9 @@ export interface ChartSpec {
 	query: R2QueryRef;
 	xAxis: ChartAxisSpec;
 	xWindowDays?: number;
-	yAxis?: {
-		label?: string;
-		min?: number;
-		max?: number;
-	};
+	enableSecondaryAxis?: boolean;
+	yAxis?: ChartYAxisSpec;
+	yAxes?: ChartYAxisSpec[];
 	series?: ChartSeriesSpec[];
 	seriesFromField?: ChartSeriesFromField;
 	seriesFromColumns?: ChartSeriesFromColumns;
@@ -159,6 +164,7 @@ export function buildChartOption(spec: ChartSpec, data: QueryResponseData): echa
 	const useTimeAxis = (spec.xAxis.type ?? 'category') === 'time';
 	const xAxisType = columnTypes.get(spec.xAxis.field);
 	const shouldRotateXAxis = xAxisType === 'date';
+	const allowSecondaryAxis = !!spec.enableSecondaryAxis;
 
 	const series: echarts.SeriesOption[] = [];
 
@@ -182,6 +188,8 @@ export function buildChartOption(spec: ChartSpec, data: QueryResponseData): echa
 		);
 	}
 
+	const normalizedSeries = allowSecondaryAxis ? series : series.map((item) => normalizeSeriesAxis(item));
+
 	const option: echarts.EChartsOption = {
 		xAxis: {
 			type: useTimeAxis ? 'time' : 'category',
@@ -189,13 +197,8 @@ export function buildChartOption(spec: ChartSpec, data: QueryResponseData): echa
 			name: spec.xAxis.label,
 			axisLabel: shouldRotateXAxis ? { rotate: 35 } : undefined,
 		},
-		yAxis: {
-			type: 'value',
-			name: spec.yAxis?.label,
-			min: spec.yAxis?.min,
-			max: spec.yAxis?.max,
-		},
-		series,
+		yAxis: buildYAxis(spec, normalizedSeries, allowSecondaryAxis),
+		series: normalizedSeries,
 	};
 
 	return option;
@@ -358,13 +361,14 @@ function buildSeriesFromSpec(
 ): echarts.SeriesOption {
 	const seriesType = resolveSeriesType(spec, seriesSpec);
 	const isArea = seriesType === 'line' && (seriesSpec.type === 'area' || spec.chartType === 'area');
+	const defaultStack = spec.chartType === 'stacked-bar' && seriesType === 'bar' ? 'total' : undefined;
 	const values = rows.map((row) => resolveSeriesValue(row, seriesSpec, columnTypes));
 	const dataPoints = useTimeAxis ? values.map((value, idx) => [xValues[idx], value]) : values;
 
 	return {
 		name: seriesSpec.name,
 		type: seriesType,
-		stack: seriesSpec.stack ?? (spec.chartType === 'stacked-bar' ? 'total' : undefined),
+		stack: seriesSpec.stack ?? defaultStack,
 		areaStyle: isArea ? {} : undefined,
 		yAxisIndex: seriesSpec.yAxisIndex,
 		data: dataPoints,
@@ -405,6 +409,7 @@ function buildSeriesFromField(
 	return sortedNames.map((name) => {
 		const seriesType = resolveSeriesType(spec, { name, type: source.type ?? spec.chartType });
 		const isArea = seriesType === 'line' && (source.type === 'area' || spec.chartType === 'area');
+		const defaultStack = spec.chartType === 'stacked-bar' && seriesType === 'bar' ? 'total' : undefined;
 		const values = xValues.map((xValue) => {
 			const xKey = String(xValue ?? '');
 			return seriesMap.get(name)?.get(xKey) ?? null;
@@ -414,7 +419,7 @@ function buildSeriesFromField(
 		return {
 			name,
 			type: seriesType,
-			stack: source.stack ?? (spec.chartType === 'stacked-bar' ? 'total' : undefined),
+			stack: source.stack ?? defaultStack,
 			areaStyle: isArea ? {} : undefined,
 			yAxisIndex: source.yAxisIndex,
 			data: dataPoints,
@@ -433,18 +438,86 @@ function buildSeriesFromColumns(
 	return source.fields.map((fieldSpec) => {
 		const seriesType = resolveSeriesType(spec, { name: fieldSpec.name ?? fieldSpec.field, type: fieldSpec.type });
 		const isArea = seriesType === 'line' && (fieldSpec.type === 'area' || spec.chartType === 'area');
+		const defaultStack = spec.chartType === 'stacked-bar' && seriesType === 'bar' ? 'total' : undefined;
 		const values = rows.map((row) => coerceValue(row[fieldSpec.field], columnTypes.get(fieldSpec.field)));
 		const dataPoints = useTimeAxis ? values.map((value, idx) => [xValues[idx], value]) : values;
 
 		return {
 			name: fieldSpec.name ?? fieldSpec.field,
 			type: seriesType,
-			stack: fieldSpec.stack ?? (spec.chartType === 'stacked-bar' ? 'total' : undefined),
+			stack: fieldSpec.stack ?? defaultStack,
 			areaStyle: isArea ? {} : undefined,
 			yAxisIndex: fieldSpec.yAxisIndex,
 			data: dataPoints,
 		};
 	});
+}
+
+function buildYAxis(
+	spec: ChartSpec,
+	series: echarts.SeriesOption[],
+	allowSecondaryAxis: boolean
+): echarts.EChartsOption['yAxis'] {
+	const primary = spec.yAxis ?? spec.yAxes?.[0] ?? {};
+	if (!allowSecondaryAxis) {
+		return {
+			type: 'value',
+			name: primary.label,
+			min: primary.min,
+			max: primary.max,
+			position: primary.position,
+		};
+	}
+
+	if (spec.yAxes && spec.yAxes.length) {
+		const axes = spec.yAxes.map((axis, index) => ({
+			type: 'value',
+			name: axis.label,
+			min: axis.min,
+			max: axis.max,
+			position: axis.position ?? (index === 1 ? 'right' : 'left'),
+		}));
+		return axes.length === 1 ? axes[0] : axes;
+	}
+
+	const maxIndex = series.reduce((max, item) => {
+		const yAxisIndex = (item as { yAxisIndex?: number }).yAxisIndex ?? 0;
+		return Math.max(max, yAxisIndex);
+	}, 0);
+
+	if (maxIndex > 0) {
+		return [
+			{
+				type: 'value',
+				name: primary.label,
+				min: primary.min,
+				max: primary.max,
+				position: primary.position ?? 'left',
+			},
+			{
+				type: 'value',
+				position: 'right',
+			},
+		];
+	}
+
+	return {
+		type: 'value',
+		name: primary.label,
+		min: primary.min,
+		max: primary.max,
+		position: primary.position,
+	};
+}
+
+function normalizeSeriesAxis(series: echarts.SeriesOption): echarts.SeriesOption {
+	if (!series || typeof series !== 'object') {
+		return series;
+	}
+	if ('yAxisIndex' in series) {
+		return { ...(series as Record<string, unknown>), yAxisIndex: 0 };
+	}
+	return series;
 }
 
 function resolveSeriesValue(
