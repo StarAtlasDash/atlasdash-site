@@ -44,9 +44,11 @@
 	--areachart-1: #3A0CA3;
 	--areachart-2: #a75cf7;
 	--areachart-3: #375cff;
+	--areachart-3: #194ed5;
 	--areachart-4: #008F81;
 	--areachart-5: #ffa600;
 	--areachart-6: #f54a97;
+	--areachart-7: #00E0CA;
 	
 
 	--radius: 12px;
@@ -317,6 +319,14 @@ p.lead {
 	box-shadow: var(--shadow); */
 	
 	/* background: var(--bg); */
+}
+
+.table-block {
+	width: 100%;
+}
+
+.table-block--fixed {
+	height: 400px;
 }
 
 /* --- Responsive Tweaks --- */

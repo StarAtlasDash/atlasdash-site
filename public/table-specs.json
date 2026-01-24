@@ -1,0 +1,20 @@
+[
+  {
+    "id": "fleet-activity-table",
+    "title": "Ship Trading Volume (last 7 days)",
+    "label": "Game Economy",
+    "descriptionMd": "Trading volume over the last 7 days, broken down by ship.",
+    "infoMd": "Tables support column filters, visibility toggles, and sorting. Drag a header to reorder columns.",
+    "query": {
+      "source": "flipside",
+      "dataset": "leaderboard-gm-1w"
+    },
+    "columns": [
+      { "field": "NAME", "label": "Ship" },
+      { "field": "TRADING_VOLUME", "label": "Trading Volume" },
+      { "field": "AMOUNT", "label": "Amount" },
+      { "field": "AVG_PRICE", "label": "Average Price" }
+    ],
+    "enableColumnReorder": true
+  }
+]

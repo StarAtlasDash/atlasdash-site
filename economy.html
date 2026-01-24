@@ -24,7 +24,23 @@
 					<p>Dashboards focused on gameplay loops, production, and in‑game activity. This page will grow into the
 						core hub for the economic engine of Star Atlas.</p>
 				</section>
+
+				<section class="section">
+					<header class="section__header">
+						<h2>Fleet Activity (Table)</h2>
+					</header>
+					<p class="lead">A tabular view of fleet activity across gameplay loops. Use filters to isolate time ranges or specific
+						activity categories.</p>
+					<div class="chart">
+						<atlas-table
+							id="fleetActivityTable"
+							data-table-id="fleet-activity-table"
+							class="table-block table-block--fixed"
+						></atlas-table>
+					</div>
+				</section>
 			</main>
 		</div>
+		<script type="module" src="/src/main.ts"></script>
 	</body>
 </html>
