@@ -1,7 +1,7 @@
 {
   "rows": [
     [
-      { "id": "atlas-emissions", "span": 2, "minHeight": 360 }
+      { "id": "atlas-emissions", "span": 2, "minHeight": 480 }
     ],
     [
       { "id": "token-supply", "span": 1, "minHeight": 300 },

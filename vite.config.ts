@@ -31,7 +31,9 @@ export default defineConfig({
 		rollupOptions: {
 			input: {
 				main: 'index.html',
-				test: 'test.html',
+				ecosystem: 'ecosystem.html',
+				economy: 'economy.html',
+				tokenomics: 'tokenomics.html'
 			},
 		},
 	},

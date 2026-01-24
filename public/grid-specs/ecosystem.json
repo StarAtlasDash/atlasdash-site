@@ -1,11 +1,11 @@
 {
   "rows": [
     [
-      { "id": "dau-stacked", "span": 2, "minHeight": 360 }
+      { "id": "dau-stacked", "span": 2, "minHeight": 480 }
     ],
     [
-      { "id": "line-chart", "span": 1, "minHeight": 300 },
-      { "id": "ecosystem-activity", "span": 1, "minHeight": 300 }
+      { "id": "line-chart", "span": 1, "minHeight": 480 },
+      { "id": "ecosystem-activity", "span": 1, "minHeight": 480 }
     ]
   ]
 }
