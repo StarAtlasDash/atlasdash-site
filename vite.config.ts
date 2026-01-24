@@ -18,7 +18,6 @@ export default defineConfig({
 			babel({
 				configFile: false,
 				extensions: ['.ts', '.js'],
-
 				plugins: [['@babel/plugin-proposal-decorators', { version: '2023-11' }]],
 			}),
 			// Only run this transform if the file contains a decorator.

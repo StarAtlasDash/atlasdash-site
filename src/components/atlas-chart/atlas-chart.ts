@@ -489,7 +489,7 @@ export class AtlasChart extends BaseComponentElement {
 		}
 		this.globalInfoController = new AbortController();
 		const { signal } = this.globalInfoController;
-		document.addEventListener('click', this.onDocumentClick, true, { signal });
+		document.addEventListener('click', this.onDocumentClick, { capture: true, signal });
 		document.addEventListener('keydown', this.onDocumentKeydown, { signal });
 	}
 
