@@ -151,8 +151,12 @@ main > :last-child {
 	padding: 0;
 }
 
-.navbar-links a {
+a {
+	color: var(--accent);
 	text-decoration: none;
+}
+
+.navbar-links a {
 	color: rgba(0, 0, 0, 0.7);
 	font-weight: 500;
 	transition: color 0.3s ease;
@@ -254,6 +258,10 @@ main > :last-child {
 	h2 {
 		margin: 0;
 	}
+
+	.section--center & {
+		justify-content: center;
+	}
 }
 
 .section__label {
@@ -290,16 +298,71 @@ p.lead {
 	/* margin-inline: auto; */
 	/* text-align: center; */
 	/* padding: 0 1rem; */
+
+	.section--center & {
+		margin-left: auto;
+		margin-right: auto;
+		text-align: center;
+	}
 }
 
 .grid-3 {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 20px;
 	margin-top: 2rem;
 }
 
+@media (max-width: 960px) {
+	.grid-3 {
+		grid-template-columns: 1fr;
+	}
+}
+
+.logo-band {
+	border-top: 1px solid var(--line);
+	border-bottom: 1px solid var(--line);
+	padding: 2rem 0;
+}
+
+.logos {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	justify-content: space-around;
+	flex-wrap: wrap;
+	max-width: 640px;
+	margin: 0 auto;
+}
+
+.logos > img {
+	height: 40px;
+	object-fit: contain;
+	opacity: 0.15;
+
+	&:hover {
+		opacity: 0.35;
+	}
+}
+
+.logos > img[alt="Aephia Industries"] {
+	height: 20px;
+}
+
+.logos>img[alt="z.ink"] {
+	height: 20px;
+}
+
+.site-footer {
+	text-align: center;
+	padding: 1rem 0 2rem;
+	font-size: 0.9rem;
+	color: var(--muted);
+}
+
 .card {
+	display: flex;
+	flex-direction: column;
 	background: var(--surface);
 	border: 1px solid var(--line);
 	border-radius: var(--radius);
@@ -310,12 +373,31 @@ p.lead {
 
 .card h3 {
 	margin-top: 0;
-	color: var(--accent);
+	color: #000;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.card__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.5rem;
+	height: 1.5rem;
+	flex: 0 0 auto;
 }
 
 .card p {
 	color: var(--muted);
 	margin-bottom: 1rem;
+}
+
+.card a {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	justify-content: flex-end;
 }
 
 .chart-block {
