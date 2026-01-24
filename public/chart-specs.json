@@ -39,8 +39,8 @@
         "stack": "total"
       }
     ],
-    "descriptionHtml": "Daily Active Users (DAU) in SAGE represents the number of unique wallets playing SAGE: Starbased on a given day. DAU in Ecosystem represents the wallets interacting with the broader Star Atlas ecosystem (e.g., Lockers, Marketplace). <em>[Data as of yesterday]</em>",
-    "infoHtml": "Multi-paragraph context and methodology go here.<br/>This slot is optional and only shows when provided."
+    "descriptionMd": "Daily Active Users (DAU) in SAGE represents the number of unique wallets playing SAGE: Starbased on a given day. DAU in Ecosystem represents the wallets interacting with the broader Star Atlas ecosystem (e.g., Lockers, Marketplace). *[Data as of yesterday]*",
+    "infoMd": "Multi-paragraph context and methodology go here.\n\nThis slot is optional and only shows when provided."
   },
   {
     "id": "line-chart",
@@ -54,8 +54,7 @@
     },
     "xAxis": {
       "field": "DATE",
-      "type": "category",
-      "labelDensity": 1
+      "type": "category"
     },
     "sort": {
       "field": "DATE",
@@ -67,18 +66,18 @@
       "valueField": "WALLETS",
       "type": "line"
     },
-    "descriptionHtml": "Daily Active Users (DAU) in SAGE represents the number of unique wallets playing SAGE: Starbased on a given day. DAU in Ecosystem represents the wallets interacting with the broader Star Atlas ecosystem (e.g., Lockers, Marketplace). <em>[Data as of yesterday]</em>",
-    "infoHtml": "Multi-paragraph context and methodology go here.<br/>This slot is optional and only shows when provided."
+    "descriptionMd": "Daily Active Users (DAU) in SAGE represents the number of unique wallets playing SAGE: Starbased on a given day. DAU in Ecosystem represents the wallets interacting with the broader Star Atlas ecosystem (e.g., Lockers, Marketplace). *[Data as of yesterday]*",
+    "infoMd": "Multi-paragraph context and methodology go here.\n\nThis slot is optional and only shows when provided."
   },
   {
-    "id": "atlas-emissions",
-    "title": "ATLAS Emissions",
-    "label": "Tokenomics",
+    "id": "fleet-activity-sage",
+    "title": "Fleet Activity SAGE",
+    "label": "Game Economy",
     "chartType": "stacked-bar",
-    "xWindowDays": 90,
+    "xWindowDays": 365,
     "query": {
       "source": "flipside",
-      "dataset": "atlas-emission"
+      "dataset": "sb-active-fleets"
     },
     "xAxis": {
       "field": "DATE",
@@ -92,13 +91,49 @@
     },
     "seriesFromColumns": {
       "fields": [
-        { "field": "FF", "name": "Faction Fleet", "type": "bar", "stack": "total" },
+        { "field": "SCANNING_FLEETS_AVG", "name": "Scanning", "type": "bar", "stack": "total" },
+        { "field": "MINING_FLEETS_AVG", "name": "Mining", "type": "bar", "stack": "total" },
+        { "field": "CARGO_FLEETS_AVG", "name": "Cargo", "type": "bar", "stack": "total" }
+      ]
+    },
+    "description": "SAGE Fleets assigned to the various gameplay loops (scanning, mining, cargo) per day"
+  },
+  {
+    "id": "atlas-emissions",
+    "title": "ATLAS Emissions",
+    "label": "Tokenomics",
+    "chartType": "stacked-bar",
+    "xWindowDays": 365,
+    "xZoom": {
+      "showSlider": true,
+      "inside": false,
+      "windowDays": 90,
+      "zoomLock": false,
+      "brushSelect": false,
+       "shadowField": "TOTAL"
+    },
+    "query": {
+      "source": "flipside",
+      "dataset": "atlas-emission"
+    },
+    "xAxis": {
+      "field": "DATE",
+      "type": "category"
+    },
+    "sort": {
+      "field": "DATE",
+      "order": "asc",
+      "type": "date"
+    },
+    "seriesFromColumns": {
+      "fields": [
         { "field": "STARBASED", "name": "SAGE (Loyalty Points)", "type": "bar", "stack": "total" },
-        { "field": "FIC", "name": "SAGE (FICs)", "type": "bar", "stack": "total" }
+        { "field": "FIC", "name": "SAGE (FICs)", "type": "bar", "stack": "total" },
+        { "field": "FF", "name": "Faction Fleet", "type": "bar", "stack": "total" }
       ]
     },
     "series": [
-      { "name": "ATLAS 3M Avg", "field": "ATLAS_3M_AVG", "type": "line" }
+      { "name": "Total: 3-month Average", "field": "ATLAS_3M_AVG", "type": "line" }
     ],
     "description": "ATLAS Emissions through Faction Fleet (SCORE) and SAGE Starbased. In Starbased players claim ATLAS for accumulated Loyalty Points and sell Faction Infrastructure Contracts (FICSs) to NPC bidders."
   }

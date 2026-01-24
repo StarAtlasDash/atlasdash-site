@@ -29,6 +29,12 @@
 	gap: 0.5rem;
 }
 
+.info-wrap {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+}
+
 .chart-title {
 	margin: 0;
 	font-size: 1.1rem;
@@ -64,6 +70,10 @@
 	cursor: pointer;
 	font-size: 0.9rem;
 	padding: 0;
+}
+
+.info-button[hidden] {
+	display: none;
 }
 
 .info-button:focus-visible {
@@ -105,10 +115,14 @@
 
 .info-popover {
 	position: absolute;
-	top: 2.5rem;
+	top: calc(100% + 0.5rem);
 	right: 0;
 	z-index: 10;
 	max-width: min(360px, 90vw);
+}
+
+.info-popover[hidden] {
+	display: none;
 }
 
 .info-card {

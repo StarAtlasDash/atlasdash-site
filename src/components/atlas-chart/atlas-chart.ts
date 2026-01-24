@@ -67,6 +67,8 @@ export class AtlasChart extends BaseComponentElement {
 	private infoOpen = false;
 	private resizeHandle: number | null = null;
 	private lastOptionState = { chartType: '', noLegend: false };
+	private globalInfoController: AbortController | null = null;
+	private hasInfoContent = false;
 
 	constructor() {
 		super(template, style);
@@ -237,7 +239,7 @@ export class AtlasChart extends BaseComponentElement {
 	}
 
 	private getAxisDataLength(
-		axes: echarts.EChartsOption['xAxis'] extends Array<infer T> ? T[] : never[],
+		axes: echarts.XAXisComponentOption[],
 		series: echarts.EChartsOption['series']
 	) {
 		for (const axis of axes) {
@@ -257,6 +259,9 @@ export class AtlasChart extends BaseComponentElement {
 
 	private buildBaseOption(userOption: echarts.EChartsOption): echarts.EChartsOption {
 		const colors = this.getThemeColors();
+		const hasShadowSeries = this.hasShadowSeries(userOption);
+		const palette = this.isAreaPaletteChart(userOption) ? colors.areaChartColors : colors.chartColors;
+		const color = hasShadowSeries ? ['transparent', ...palette] : palette;
 		const showLegend = !this.noLegend;
 		const isCartesian = this.isCartesianChart(userOption);
 		const tooltipBase = {
@@ -276,7 +281,7 @@ export class AtlasChart extends BaseComponentElement {
 
 		const base: echarts.EChartsOption = {
 			backgroundColor: 'transparent',
-			color: [colors.accent, colors.accentLight, colors.blue, colors.green, colors.orange],
+			color,
 			textStyle: {
 				color: colors.text,
 				fontFamily: colors.fontFamily,
@@ -347,6 +352,24 @@ export class AtlasChart extends BaseComponentElement {
 		});
 	}
 
+	private isAreaPaletteChart(option: echarts.EChartsOption): boolean {
+		if (this.chartType) {
+			return ['stacked-bar', 'bar', 'area', 'pie'].includes(this.chartType);
+		}
+		const series = (option as { series?: echarts.SeriesOption | echarts.SeriesOption[] }).series;
+		const list = Array.isArray(series) ? series : series ? [series] : [];
+		return list.some((s) => {
+			const type = (s as { type?: string }).type;
+			return type === 'bar' || type === 'area' || type === 'pie';
+		});
+	}
+
+	private hasShadowSeries(option: echarts.EChartsOption): boolean {
+		const series = (option as { series?: echarts.SeriesOption | echarts.SeriesOption[] }).series;
+		const list = Array.isArray(series) ? series : series ? [series] : [];
+		return list.some((s) => (s as { name?: string }).name === '__shadow__');
+	}
+
 	private mergeOptions<T extends Record<string, any>>(base: T, override: T): T {
 		const output: Record<string, any> = { ...base };
 		Object.entries(override).forEach(([key, value]) => {
@@ -395,6 +418,7 @@ export class AtlasChart extends BaseComponentElement {
 
 	private updateInfoVisibility() {
 		const hasInfo = (this.infoSlot?.assignedElements({ flatten: true }).length ?? 0) > 0;
+		this.hasInfoContent = hasInfo;
 		const showInfo = !!hasInfo;
 		if (this.infoButton) {
 			this.infoButton.hidden = !showInfo;
@@ -408,15 +432,12 @@ export class AtlasChart extends BaseComponentElement {
 	private bindInfoEvents() {
 		this.infoButton?.addEventListener('click', this.onInfoToggle);
 		this.infoClose?.addEventListener('click', this.onInfoClose);
-		document.addEventListener('click', this.onDocumentClick, true);
-		document.addEventListener('keydown', this.onDocumentKeydown);
 	}
 
 	private unbindInfoEvents() {
 		this.infoButton?.removeEventListener('click', this.onInfoToggle);
 		this.infoClose?.removeEventListener('click', this.onInfoClose);
-		document.removeEventListener('click', this.onDocumentClick, true);
-		document.removeEventListener('keydown', this.onDocumentKeydown);
+		this.detachGlobalInfoEvents();
 	}
 
 	private onInfoToggle = () => {
@@ -445,6 +466,9 @@ export class AtlasChart extends BaseComponentElement {
 	};
 
 	private setInfoOpen(open: boolean) {
+		if (open && !this.hasInfoContent) {
+			return;
+		}
 		this.infoOpen = open;
 		if (this.infoPopover) {
 			this.infoPopover.hidden = !open;
@@ -452,10 +476,46 @@ export class AtlasChart extends BaseComponentElement {
 		if (this.infoButton) {
 			this.infoButton.setAttribute('aria-expanded', String(open));
 		}
+		if (open) {
+			this.attachGlobalInfoEvents();
+		} else {
+			this.detachGlobalInfoEvents();
+		}
+	}
+
+	private attachGlobalInfoEvents() {
+		if (this.globalInfoController) {
+			return;
+		}
+		this.globalInfoController = new AbortController();
+		const { signal } = this.globalInfoController;
+		document.addEventListener('click', this.onDocumentClick, true, { signal });
+		document.addEventListener('keydown', this.onDocumentKeydown, { signal });
+	}
+
+	private detachGlobalInfoEvents() {
+		this.globalInfoController?.abort();
+		this.globalInfoController = null;
 	}
 
 	private getThemeColors() {
 		const styles = getComputedStyle(this);
+		const chartColors = [
+			styles.getPropertyValue('--chart-1').trim() || '#ff5a5f',
+			styles.getPropertyValue('--chart-2').trim() || '#4cc9f0',
+			styles.getPropertyValue('--chart-3').trim() || '#3a86ff',
+			styles.getPropertyValue('--chart-4').trim() || '#22c55e',
+			styles.getPropertyValue('--chart-5').trim() || '#f59e0b',
+			styles.getPropertyValue('--chart-6').trim() || '#ef4444',
+		];
+		const areaChartColors = [
+			styles.getPropertyValue('--areachart-1').trim() || '#264653',
+			styles.getPropertyValue('--areachart-2').trim() || '#2a9d8f',
+			styles.getPropertyValue('--areachart-3').trim() || '#e9c46a',
+			styles.getPropertyValue('--areachart-4').trim() || '#f4a261',
+			styles.getPropertyValue('--areachart-5').trim() || '#e76f51',
+			styles.getPropertyValue('--areachart-6').trim() || '#8ab17d',
+		];
 		return {
 			accent: styles.getPropertyValue('--accent').trim() || '#7c3aed',
 			accentLight: styles.getPropertyValue('--accent-light').trim() || '#a78bfa',
@@ -465,9 +525,8 @@ export class AtlasChart extends BaseComponentElement {
 			fontFamily: styles.fontFamily || 'sans-serif',
 			tooltipBg: '#ffffff',
 			tooltipText: '#111111',
-			blue: '#3b82f6',
-			green: '#22c55e',
-			orange: '#f59e0b',
+			chartColors,
+			areaChartColors,
 		};
 	}
 }

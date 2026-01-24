@@ -18,8 +18,8 @@ Specs are loaded at runtime from `public/chart-specs.json` and applied to `<atla
   "title": "Chart Title",
   "label": "Ecosystem",
   "description": "Short text (optional)",
-  "descriptionHtml": "HTML string (optional)",
-  "infoHtml": "HTML string (optional)",
+  "descriptionMd": "Markdown string (optional)",
+  "infoMd": "Markdown string (optional)",
   "chartType": "line",
   "query": {
     "source": "flipside",
@@ -32,7 +32,15 @@ Specs are loaded at runtime from `public/chart-specs.json` and applied to `<atla
     "labelDensity": 0.85
   },
   "xWindowDays": 365,
+  "xZoom": {
+    "enabled": true,
+    "showSlider": true,
+    "inside": true,
+    "windowDays": 120
+  },
   "enableSecondaryAxis": false,
+  "lockYAxisMax": true,
+  "yAxisMaxRound": true,
   "yAxis": {
     "label": "Wallets",
     "min": 0,
@@ -55,9 +63,10 @@ Specs are loaded at runtime from `public/chart-specs.json` and applied to `<atla
 - `id` (string, required): Unique ID used by `data-chart-id`.
 - `title` (string, required): Chart title shown in the component header.
 - `label` (string, optional): Small badge aligned to the right of the header.
-- `description` (string, optional): Plain text description. Ignored if `descriptionHtml` is provided.
-- `descriptionHtml` (string, optional): HTML string injected into `slot="description"`.
-- `infoHtml` (string, optional): HTML string injected into `slot="info"`.
+- `description` (string, optional): Plain text description. Ignored if `descriptionMd` is provided.
+- `descriptionMd` (string, optional): Markdown string rendered into `slot="description"`.
+- `infoMd` (string, optional): Markdown string rendered into `slot="info"`.
+- `descriptionHtml` / `infoHtml` (string, optional): Legacy fields, treated as markdown (raw HTML is escaped).
 - `chartType` (string, required): `bar`, `line`, `area`, or `stacked-bar`.
 - `query` (object, required): R2 location:
   - `source`: e.g. `flipside`
@@ -68,7 +77,31 @@ Specs are loaded at runtime from `public/chart-specs.json` and applied to `<atla
   - `label`: axis label (optional)
   - `labelDensity`: controls how many labels to show relative to width (lower = fewer labels). Allowed range: `0.1`–`1.0`. The last label is always shown. Internally this is scaled to allow denser labeling without exposing values above `1.0`.
 - `xWindowDays` (number, optional): Show only the most recent N days based on the max date in the dataset. Applied only when the X-axis column type is `date`.
+- `xZoom` (object, optional): Enables horizontal scrolling via ECharts `dataZoom` on the X-axis.
+  - `enabled` (boolean, optional): Defaults to `true` when `xZoom` is provided.
+  - `showSlider` (boolean, optional): Show the draggable slider (default: `true`).
+  - `inside` (boolean, optional): Enable scroll/zoom via mouse wheel or touch (default: `true`).
+  - `showDataShadow` (boolean or `"auto"`, optional): Show the mini preview in the slider. Defaults to ECharts behavior (`"auto"`).
+  - `shadowField` (string, optional): Column name used to build the slider’s data shadow. Values are summed when multiple rows share the same X value.
+  - `shadowSeriesName` (string, optional): Use an existing series (by `name`) to drive the slider’s data shadow.
+  - `start` / `end` (number, optional): Window in percent (0–100).
+  - `startValue` / `endValue` (string/number, optional): Window by axis values (takes precedence over `start`/`end`).
+  - `windowDays` (number, optional): For date axes, show the most recent N days without trimming the dataset.
+  - `windowPoints` (number, optional): Show the most recent N points on any axis.
+  - `filterMode` (string, optional): Controls how out-of-window data is handled.
+    - `filter` (default): removes data outside the window; axis ranges adjust to the visible data.
+    - `empty`: keeps categories/indices but sets out-of-window values to empty (useful for maintaining alignment).
+    - `none`: leaves data intact (can reduce axis drift, but may introduce visual artifacts).
+  - `zoomLock` (boolean, optional): Lock the window size so the slider can only pan, not resize.
+  - `brushSelect` (boolean, optional): Allow selecting a custom range by dragging on the slider background (default: `true` in ECharts).
+  - `height` (number, optional): Slider height.
+  - `bottom` (number|string, optional): Slider offset from the bottom.
+  - `gridBottom` (number, optional): Overrides grid bottom padding when a slider is used.
+`xZoom` shadow precedence: `shadowSeriesName` → `shadowField`.
+`xZoom` window precedence: `startValue`/`endValue` → `start`/`end` → `windowDays`/`windowPoints`.
 - `enableSecondaryAxis` (boolean, optional): When `true`, allows multiple Y axes (using `yAxes` or `yAxisIndex`). Default is `false`, which forces a single axis even if series set `yAxisIndex`.
+- `lockYAxisMax` (boolean, optional): Locks the Y-axis max to the highest value in the full dataset so the scale stays fixed while sliding. Default is `true`. Set to `false` to allow the axis to rescale to the visible window.
+- `yAxisMaxRound` (boolean, optional): Trims insignificant digits from the computed max (no rounding up). For example, `32,456,789` becomes `32,000,000`. Default is `true`. Set to `false` to use the exact computed max.
 - `yAxis` (object, optional):
   - `label`: axis label
   - `min` / `max`: numeric bounds
@@ -176,7 +209,7 @@ Each field can also set `yAxisIndex` to target a secondary axis.
       "stack": "total"
     }
   ],
-  "descriptionHtml": "Daily Active Users (DAU) in SAGE represents the number of unique wallets playing SAGE: Starbased on a given day. DAU in Ecosystem represents the wallets interacting with the broader Star Atlas ecosystem (e.g., Lockers, Marketplace). <em>[Data as of yesterday]</em>"
+  "descriptionMd": "Daily Active Users (DAU) in SAGE represents the number of unique wallets playing SAGE: Starbased on a given day. DAU in Ecosystem represents the wallets interacting with the broader Star Atlas ecosystem (e.g., Lockers, Marketplace). *[Data as of yesterday]*"
 }
 ```
 
@@ -196,7 +229,7 @@ Each field can also set `yAxisIndex` to target a secondary axis.
     "valueField": "WALLETS",
     "type": "line"
   },
-  "descriptionHtml": "Daily Active Users (DAU) in SAGE represents the number of unique wallets playing SAGE: Starbased on a given day. DAU in Ecosystem represents the wallets interacting with the broader Star Atlas ecosystem (e.g., Lockers, Marketplace). <em>[Data as of yesterday]</em>"
+  "descriptionMd": "Daily Active Users (DAU) in SAGE represents the number of unique wallets playing SAGE: Starbased on a given day. DAU in Ecosystem represents the wallets interacting with the broader Star Atlas ecosystem (e.g., Lockers, Marketplace). *[Data as of yesterday]*"
 }
 ```
 
@@ -236,3 +269,11 @@ The runtime loader will:
 2. Fetch the query data from R2
 3. Build an ECharts option
 4. Apply the plan to the component
+
+## Markdown Support
+Descriptions and info boxes support a tiny subset of Markdown:
+- `**bold**`
+- `*italic*`
+- `[label](https://example.com)`
+- blank lines create new paragraphs
+All HTML is escaped before rendering.

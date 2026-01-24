@@ -25,14 +25,35 @@
  	--surface: #f5f5f5;
  	--text: #1a1a1a;
  	--muted: #5a5a5a;
- 	--line: #e5e7eb;
- 	--accent: #7c3aed;
- 	--accent-light: #a78bfa;
- 	--radius: 12px;
- 	--shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
- 	--container: 1100px;
- 	--pad: 20px;
- }
+	--line: #e5e7eb;
+	--accent: #7c3aed;
+	--accent-light: #a78bfa;
+
+	/* Line chart colors */
+	--chart-1: #3A0CA3;
+	--chart-2: #a78bfa;
+	--chart-3: #4361EE;
+	--chart-4: #008F81;
+	--chart-5: #ffa600;
+	--chart-6: #f7255a;
+	--chart-7: #00E0CA;
+
+	/* Bar & Pie chart colorscheme */
+	/* --areachart-1: #003f5c;
+	--areachart-2: #444e86; */
+	--areachart-1: #3A0CA3;
+	--areachart-2: #a75cf7;
+	--areachart-3: #375cff;
+	--areachart-4: #008F81;
+	--areachart-5: #ffa600;
+	--areachart-6: #f54a97;
+	
+
+	--radius: 12px;
+	--shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+	--container: 1100px;
+	--pad: 20px;
+}
 
 :root {
 	font-family: "Poppins", "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
