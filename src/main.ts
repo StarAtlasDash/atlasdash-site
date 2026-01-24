@@ -1,5 +1,6 @@
 import { registerAtlasChart } from './components/atlas-chart';
 import { registerAtlasTable } from './components/atlas-table';
+import { registerAtlasAnalyticsGrid } from './components/atlas-analytics-grid';
 import type { ChartSpec } from './charts/chart-spec';
 import { applyChartRenderPlan, buildChartRenderPlan } from './charts/chart-spec';
 import type { TableSpec } from './tables/table-spec';
@@ -8,6 +9,7 @@ import { getQueryData } from './data/query-cache';
 
 registerAtlasChart();
 registerAtlasTable();
+registerAtlasAnalyticsGrid();
 
 document.addEventListener('DOMContentLoaded', async () => {
 	const [chartResponse, tableResponse] = await Promise.all([
@@ -58,4 +60,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 		const plan = buildTableRenderPlan(spec, data);
 		applyTableRenderPlan(tableEl as HTMLElement & { setTableData?: (plan: unknown) => void }, plan);
 	}
+
 });

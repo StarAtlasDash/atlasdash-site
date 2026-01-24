@@ -1,0 +1,10 @@
+{
+  "rows": [
+    [
+      { "id": "fleet-activity-sage", "span": 2, "minHeight": 360 }
+    ],
+    [
+      { "id": "fleet-activity-table", "span": 2, "minHeight": 320 }
+    ]
+  ]
+}

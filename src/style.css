@@ -9,6 +9,7 @@
 	--dynamic-outer-padding: var(--outer-padding);
 	--outer-border-size: 0.75rem;
 	--outer-border-radius: 2rem;
+	--inner-border-radius: calc(var(--outer-border-radius) - var(--outer-border-size));
 	--top-bar-radius: 2rem;
 	--color-white: #FFFFFF;
 	--color-off-white: #F5F5F5;
@@ -115,6 +116,11 @@ main > .section {
 	padding-right: 1rem;
 }
 
+main > :last-child {
+	border-bottom-left-radius: var(--inner-border-radius);
+	border-bottom-right-radius: var(--inner-border-radius);
+}
+
 /* Brand text */
 .navbar-brand {
 	font-family: 'Orbitron', sans-serif;
@@ -212,6 +218,7 @@ main > .section {
 	font-weight: 600;
 	background: linear-gradient(90deg, #000000 0%, var(--accent) 100%);
 	-webkit-background-clip: text;
+	background-clip: text;
 	-webkit-text-fill-color: transparent;
 	margin: 0 auto;
 	max-width: 16ch;
@@ -352,10 +359,10 @@ p.lead {
 	.card {
 		padding: 18px;
 	}
-
+/* 
 	.chart-block {
 		height: 300px;
-	}
+	} */
 }
 
 @media (max-width: 480px) {
@@ -372,7 +379,7 @@ p.lead {
 		font-size: 0.95rem;
 	}
 
-	.chart-block {
+	/* .chart-block {
 		height: 260px;
-	}
+	} */
 }
