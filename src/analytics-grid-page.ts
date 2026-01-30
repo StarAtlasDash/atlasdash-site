@@ -13,15 +13,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 	const gridEl = document.querySelector<HTMLElement & {
 		setLayout?: (spec: AnalyticsGridSpec | null) => void;
 		setContent?: (content: { charts?: ChartSpec[]; tables?: TableSpec[] }) => void;
+		dataset?: { gridSpec?: string };
 	}>('atlas-analytics-grid');
 
 	if (!gridEl) {
 		return;
 	}
 
-	const gridSpecPath = resolveGridSpecPath();
+	const gridSpecPath = gridEl.dataset?.gridSpec;
 	if (!gridSpecPath) {
-		console.warn('⚠️ No grid spec mapping found for this page.');
+		console.warn('⚠️ No grid spec defined on the grid element.');
 		return;
 	}
 
@@ -50,19 +51,3 @@ document.addEventListener('DOMContentLoaded', async () => {
 	gridEl.setLayout?.(gridSpec);
 	gridEl.setContent?.({ charts: chartSpecs, tables: tableSpecs });
 });
-
-function resolveGridSpecPath(): string | null {
-	const page = window.location.pathname.split('/').pop() || '';
-
-	if (page === 'ecosystem.html') {
-		return '/grid-specs/ecosystem.json';
-	}
-	if (page === 'economy.html') {
-		return '/grid-specs/economy.json';
-	}
-	if (page === 'tokenomics.html') {
-		return '/grid-specs/tokenomics.json';
-	}
-
-	return null;
-}
