@@ -418,6 +418,23 @@ p.lead {
 	height: 400px;
 }
 
+atlas-chart,
+atlas-table,
+atlas-analytics-grid {
+	display: block;
+}
+
+atlas-chart:not(:defined),
+atlas-table:not(:defined),
+atlas-analytics-grid:not(:defined) {
+	display: block;
+	min-height: 260px;
+}
+
+atlas-chart.chart-block:not(:defined) {
+	min-height: 400px;
+}
+
 /* --- Responsive Tweaks --- */
 @media (max-width: 768px) {
 	.nav {

@@ -53,12 +53,16 @@ export class AtlasChart extends BaseComponentElement {
 	@bindTemplateElement('.info-popup')
 	private infoPopup: (HTMLElement & { setContentHtml?: (html: string | null) => void }) | null = null;
 
+	@bindTemplateElement('.loading-overlay')
+	private loadingOverlayEl: HTMLDivElement | null = null;
+
 	private chart: echarts.ECharts | null = null;
 	private resizeObserver: ResizeObserver | null = null;
 	private pendingOption: echarts.EChartsOption | null = null;
 	private resizeHandle: number | null = null;
 	private lastOptionState = { chartType: '', noLegend: false };
 	private infoContentHtml: string | null = null;
+	private loading = true;
 
 	constructor() {
 		super(template, style);
@@ -77,6 +81,7 @@ export class AtlasChart extends BaseComponentElement {
 
 	setOption(option: echarts.EChartsOption, opts: echarts.SetOptionOpts = {}) {
 		this.pendingOption = option;
+		this.setLoading(false);
 		this.applyOption(opts);
 	}
 
@@ -84,6 +89,16 @@ export class AtlasChart extends BaseComponentElement {
 		this.infoContentHtml = html;
 		if (this.isConnected) {
 			this.updateInfoContent();
+		}
+	}
+
+	setLoading(loading: boolean) {
+		if (this.loading === loading) {
+			return;
+		}
+		this.loading = loading;
+		if (this.isConnected) {
+			this.updateLoadingState();
 		}
 	}
 
@@ -99,6 +114,7 @@ export class AtlasChart extends BaseComponentElement {
 
 		this.updateDescription();
 		this.updateInfoContent();
+		this.updateLoadingState();
 		this.reapplyOptionIfNeeded();
 		this.requestResize();
 	}
@@ -107,6 +123,7 @@ export class AtlasChart extends BaseComponentElement {
 		this.initChart();
 		this.updateDescription();
 		this.updateInfoContent();
+		this.updateLoadingState();
 		this.applyOption();
 	}
 
@@ -413,6 +430,12 @@ export class AtlasChart extends BaseComponentElement {
 	private updateInfoContent() {
 		if (this.infoPopup) {
 			this.infoPopup.setContentHtml?.(this.infoContentHtml);
+		}
+	}
+
+	private updateLoadingState() {
+		if (this.loadingOverlayEl) {
+			this.loadingOverlayEl.hidden = !this.loading;
 		}
 	}
 

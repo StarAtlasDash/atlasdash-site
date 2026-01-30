@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 		if (!chartId) {
 			continue;
 		}
+		(chartEl as HTMLElement & { setLoading?: (loading: boolean) => void }).setLoading?.(true);
 
 		const spec = chartSpecs.find((item) => item.id === chartId);
 		if (!spec) {
@@ -51,6 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 		if (!tableId) {
 			continue;
 		}
+		(tableEl as HTMLElement & { setLoading?: (loading: boolean) => void }).setLoading?.(true);
 		const spec = tableSpecs.find((item) => item.id === tableId);
 		if (!spec) {
 			console.warn(`⚠️ No table spec found for ${tableId}.`);

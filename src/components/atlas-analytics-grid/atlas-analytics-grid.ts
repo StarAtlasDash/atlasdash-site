@@ -486,7 +486,9 @@ export class AtlasAnalyticsGrid extends BaseComponentElement {
 		if (chartSpec) {
 			const chartEl = document.createElement('atlas-chart') as HTMLElement & {
 				setOption?: (option: unknown) => void;
+				setLoading?: (loading: boolean) => void;
 			};
+			chartEl.setLoading?.(true);
 			container.appendChild(chartEl);
 			try {
 				const data = await getQueryData(chartSpec.query);
@@ -504,7 +506,9 @@ export class AtlasAnalyticsGrid extends BaseComponentElement {
 		if (tableSpec) {
 			const tableEl = document.createElement('atlas-table') as HTMLElement & {
 				setTableData?: (plan: unknown) => void;
+				setLoading?: (loading: boolean) => void;
 			};
+			tableEl.setLoading?.(true);
 			container.appendChild(tableEl);
 			try {
 				const data = await getQueryData(tableSpec.query);

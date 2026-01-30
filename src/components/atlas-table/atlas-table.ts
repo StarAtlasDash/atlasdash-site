@@ -98,10 +98,14 @@ export class AtlasTable extends BaseComponentElement {
 	@bindTemplateElement('.table-body')
 	private tableBodyEl: HTMLTableSectionElement | null = null;
 
+	@bindTemplateElement('.loading-overlay')
+	private loadingOverlayEl: HTMLDivElement | null = null;
+
 	private table: ReturnType<typeof createTable<QueryRow>> | null = null;
 	private tablePlan: TableDataPlan | null = null;
 	private tableState: TanstackTableState = { ...DEFAULT_TABLE_STATE };
 	private infoContentHtml: string | null = null;
+	private loading = true;
 	private columnPanelOpen = false;
 	private globalColumnPanelController: AbortController | null = null;
 	private dragColumnId: string | null = null;
@@ -113,6 +117,7 @@ export class AtlasTable extends BaseComponentElement {
 	setTableData(plan: TableDataPlan) {
 		this.tablePlan = plan;
 		this.initializeTable();
+		this.setLoading(false);
 		if (this.isConnected) {
 			this.render();
 		}
@@ -122,6 +127,16 @@ export class AtlasTable extends BaseComponentElement {
 		this.infoContentHtml = html;
 		if (this.isConnected) {
 			this.updateInfoContent();
+		}
+	}
+
+	setLoading(loading: boolean) {
+		if (this.loading === loading) {
+			return;
+		}
+		this.loading = loading;
+		if (this.isConnected) {
+			this.updateLoadingState();
 		}
 	}
 
@@ -136,6 +151,7 @@ export class AtlasTable extends BaseComponentElement {
 		}
 		this.updateDescription();
 		this.updateInfoContent();
+		this.updateLoadingState();
 		this.updateColumnToggleVisibility();
 		this.renderTable();
 	}
@@ -144,6 +160,7 @@ export class AtlasTable extends BaseComponentElement {
 		this.bindColumnToggleEvents();
 		this.updateDescription();
 		this.updateInfoContent();
+		this.updateLoadingState();
 		this.updateColumnToggleVisibility();
 		this.renderTable();
 	}
@@ -410,6 +427,12 @@ export class AtlasTable extends BaseComponentElement {
 	private updateInfoContent() {
 		if (this.infoPopup) {
 			this.infoPopup.setContentHtml?.(this.infoContentHtml);
+		}
+	}
+
+	private updateLoadingState() {
+		if (this.loadingOverlayEl) {
+			this.loadingOverlayEl.hidden = !this.loading;
 		}
 	}
 
