@@ -7,6 +7,7 @@ import {
 } from '../../libs/base-component';
 import template from './atlas-table.html?raw';
 import style from './atlas-table.css?inline';
+import '../atlas-popup';
 import type { QueryRow } from '../../types/query';
 import type { TableDataPlan } from '../../tables/table-spec';
 import {
@@ -82,17 +83,8 @@ export class AtlasTable extends BaseComponentElement {
 	@bindTemplateElement('slot[name="description"]')
 	private descriptionSlot: HTMLSlotElement | null = null;
 
-	@bindTemplateElement('slot[name="info"]')
-	private infoSlot: HTMLSlotElement | null = null;
-
-	@bindTemplateElement('.info-button')
-	private infoButton: HTMLButtonElement | null = null;
-
-	@bindTemplateElement('.info-popover')
-	private infoPopover: HTMLDivElement | null = null;
-
-	@bindTemplateElement('.info-close')
-	private infoClose: HTMLButtonElement | null = null;
+	@bindTemplateElement('.info-popup')
+	private infoPopup: (HTMLElement & { setContentHtml?: (html: string | null) => void }) | null = null;
 
 	@bindTemplateElement('.column-toggle-button')
 	private columnToggleButton: HTMLButtonElement | null = null;
@@ -109,9 +101,7 @@ export class AtlasTable extends BaseComponentElement {
 	private table: ReturnType<typeof createTable<QueryRow>> | null = null;
 	private tablePlan: TableDataPlan | null = null;
 	private tableState: TanstackTableState = { ...DEFAULT_TABLE_STATE };
-	private hasInfoContent = false;
-	private infoOpen = false;
-	private globalInfoController: AbortController | null = null;
+	private infoContentHtml: string | null = null;
 	private columnPanelOpen = false;
 	private globalColumnPanelController: AbortController | null = null;
 	private dragColumnId: string | null = null;
@@ -128,6 +118,13 @@ export class AtlasTable extends BaseComponentElement {
 		}
 	}
 
+	setInfoContent(html: string | null) {
+		this.infoContentHtml = html;
+		if (this.isConnected) {
+			this.updateInfoContent();
+		}
+	}
+
 	protected render(): void {
 		if (this.titleEl) {
 			this.titleEl.textContent = this.title || '';
@@ -138,28 +135,25 @@ export class AtlasTable extends BaseComponentElement {
 			this.labelEl.toggleAttribute('hidden', !this.label);
 		}
 		this.updateDescription();
-		this.updateInfoVisibility();
+		this.updateInfoContent();
 		this.updateColumnToggleVisibility();
 		this.renderTable();
 	}
 
 	protected onConnected(): void {
-		this.bindInfoEvents();
 		this.bindColumnToggleEvents();
 		this.updateDescription();
-		this.updateInfoVisibility();
+		this.updateInfoContent();
 		this.updateColumnToggleVisibility();
 		this.renderTable();
 	}
 
 	protected onDisconnected(): void {
-		this.unbindInfoEvents();
 		this.unbindColumnToggleEvents();
 	}
 
 	protected onSlotChange = () => {
 		this.updateDescription();
-		this.updateInfoVisibility();
 	};
 
 	private initializeTable() {
@@ -398,51 +392,14 @@ export class AtlasTable extends BaseComponentElement {
 		this.descriptionWrap.toggleAttribute('hidden', !hasSlot && !hasText);
 	}
 
-	private updateInfoVisibility() {
-		const hasInfo = (this.infoSlot?.assignedElements({ flatten: true }).length ?? 0) > 0;
-		this.hasInfoContent = hasInfo;
-		const showInfo = !!hasInfo;
-		if (this.infoButton) {
-			this.infoButton.hidden = !showInfo;
-		}
-		if (!showInfo) {
-			this.setInfoOpen(false);
-		}
-	}
-
-	private bindInfoEvents() {
-		this.infoButton?.addEventListener('click', this.onInfoToggle);
-		this.infoClose?.addEventListener('click', this.onInfoClose);
-	}
-
-	private unbindInfoEvents() {
-		this.infoButton?.removeEventListener('click', this.onInfoToggle);
-		this.infoClose?.removeEventListener('click', this.onInfoClose);
-		this.detachGlobalInfoEvents();
-	}
-
-	private onInfoToggle = () => {
-		this.setInfoOpen(!this.infoOpen);
-	};
-
-	private onInfoClose = () => {
-		this.setInfoOpen(false);
-	};
-
 	private onDocumentKeydown = (event: KeyboardEvent) => {
 		if (event.key === 'Escape') {
-			this.setInfoOpen(false);
 			this.setColumnPanelOpen(false);
 		}
 	};
 
 	private onDocumentClick = (event: MouseEvent) => {
 		const path = event.composedPath();
-		if (this.infoOpen && this.infoPopover && this.infoButton) {
-			if (!path.includes(this.infoPopover) && !path.includes(this.infoButton)) {
-				this.setInfoOpen(false);
-			}
-		}
 		if (this.columnPanelOpen && this.columnTogglePanel && this.columnToggleButton) {
 			if (!path.includes(this.columnTogglePanel) && !path.includes(this.columnToggleButton)) {
 				this.setColumnPanelOpen(false);
@@ -450,37 +407,10 @@ export class AtlasTable extends BaseComponentElement {
 		}
 	};
 
-	private setInfoOpen(open: boolean) {
-		if (open && !this.hasInfoContent) {
-			return;
+	private updateInfoContent() {
+		if (this.infoPopup) {
+			this.infoPopup.setContentHtml?.(this.infoContentHtml);
 		}
-		this.infoOpen = open;
-		if (this.infoPopover) {
-			this.infoPopover.hidden = !open;
-		}
-		if (this.infoButton) {
-			this.infoButton.setAttribute('aria-expanded', String(open));
-		}
-		if (open) {
-			this.attachGlobalInfoEvents();
-		} else {
-			this.detachGlobalInfoEvents();
-		}
-	}
-
-	private attachGlobalInfoEvents() {
-		if (this.globalInfoController) {
-			return;
-		}
-		this.globalInfoController = new AbortController();
-		const { signal } = this.globalInfoController;
-		document.addEventListener('click', this.onDocumentClick, { capture: true, signal });
-		document.addEventListener('keydown', this.onDocumentKeydown, { signal });
-	}
-
-	private detachGlobalInfoEvents() {
-		this.globalInfoController?.abort();
-		this.globalInfoController = null;
 	}
 
 	private bindColumnToggleEvents() {

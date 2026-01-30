@@ -8,6 +8,7 @@ import {
 } from '../../libs/base-component';
 import template from './atlas-chart.html?raw';
 import style from './atlas-chart.css?inline';
+import '../atlas-popup';
 
 type ChartType = 'stacked-bar' | 'bar' | 'line' | 'area' | '';
 
@@ -46,29 +47,18 @@ export class AtlasChart extends BaseComponentElement {
 	@bindTemplateElement('slot[name="description"]')
 	private descriptionSlot: HTMLSlotElement | null = null;
 
-	@bindTemplateElement('slot[name="info"]')
-	private infoSlot: HTMLSlotElement | null = null;
-
 	@bindTemplateElement('.chart-canvas')
 	private chartCanvas: HTMLDivElement | null = null;
 
-	@bindTemplateElement('.info-button')
-	private infoButton: HTMLButtonElement | null = null;
-
-	@bindTemplateElement('.info-popover')
-	private infoPopover: HTMLDivElement | null = null;
-
-	@bindTemplateElement('.info-close')
-	private infoClose: HTMLButtonElement | null = null;
+	@bindTemplateElement('.info-popup')
+	private infoPopup: (HTMLElement & { setContentHtml?: (html: string | null) => void }) | null = null;
 
 	private chart: echarts.ECharts | null = null;
 	private resizeObserver: ResizeObserver | null = null;
 	private pendingOption: echarts.EChartsOption | null = null;
-	private infoOpen = false;
 	private resizeHandle: number | null = null;
 	private lastOptionState = { chartType: '', noLegend: false };
-	private globalInfoController: AbortController | null = null;
-	private hasInfoContent = false;
+	private infoContentHtml: string | null = null;
 
 	constructor() {
 		super(template, style);
@@ -90,6 +80,13 @@ export class AtlasChart extends BaseComponentElement {
 		this.applyOption(opts);
 	}
 
+	setInfoContent(html: string | null) {
+		this.infoContentHtml = html;
+		if (this.isConnected) {
+			this.updateInfoContent();
+		}
+	}
+
 	protected render(): void {
 		if (this.titleEl) {
 			this.titleEl.textContent = this.title || '';
@@ -101,21 +98,19 @@ export class AtlasChart extends BaseComponentElement {
 		}
 
 		this.updateDescription();
-		this.updateInfoVisibility();
+		this.updateInfoContent();
 		this.reapplyOptionIfNeeded();
 		this.requestResize();
 	}
 
 	protected onConnected(): void {
 		this.initChart();
-		this.bindInfoEvents();
 		this.updateDescription();
-		this.updateInfoVisibility();
+		this.updateInfoContent();
 		this.applyOption();
 	}
 
 	protected onDisconnected(): void {
-		this.unbindInfoEvents();
 		this.resizeObserver?.disconnect();
 		this.resizeObserver = null;
 		this.chart?.dispose();
@@ -124,7 +119,6 @@ export class AtlasChart extends BaseComponentElement {
 
 	protected onSlotChange = () => {
 		this.updateDescription();
-		this.updateInfoVisibility();
 		this.requestResize();
 	};
 
@@ -416,86 +410,10 @@ export class AtlasChart extends BaseComponentElement {
 		this.requestResize();
 	}
 
-	private updateInfoVisibility() {
-		const hasInfo = (this.infoSlot?.assignedElements({ flatten: true }).length ?? 0) > 0;
-		this.hasInfoContent = hasInfo;
-		const showInfo = !!hasInfo;
-		if (this.infoButton) {
-			this.infoButton.hidden = !showInfo;
+	private updateInfoContent() {
+		if (this.infoPopup) {
+			this.infoPopup.setContentHtml?.(this.infoContentHtml);
 		}
-		if (!showInfo) {
-			this.setInfoOpen(false);
-		}
-		this.requestResize();
-	}
-
-	private bindInfoEvents() {
-		this.infoButton?.addEventListener('click', this.onInfoToggle);
-		this.infoClose?.addEventListener('click', this.onInfoClose);
-	}
-
-	private unbindInfoEvents() {
-		this.infoButton?.removeEventListener('click', this.onInfoToggle);
-		this.infoClose?.removeEventListener('click', this.onInfoClose);
-		this.detachGlobalInfoEvents();
-	}
-
-	private onInfoToggle = () => {
-		this.setInfoOpen(!this.infoOpen);
-	};
-
-	private onInfoClose = () => {
-		this.setInfoOpen(false);
-	};
-
-	private onDocumentKeydown = (event: KeyboardEvent) => {
-		if (event.key === 'Escape') {
-			this.setInfoOpen(false);
-		}
-	};
-
-	private onDocumentClick = (event: MouseEvent) => {
-		if (!this.infoOpen || !this.infoPopover || !this.infoButton) {
-			return;
-		}
-		const path = event.composedPath();
-		if (path.includes(this.infoPopover) || path.includes(this.infoButton)) {
-			return;
-		}
-		this.setInfoOpen(false);
-	};
-
-	private setInfoOpen(open: boolean) {
-		if (open && !this.hasInfoContent) {
-			return;
-		}
-		this.infoOpen = open;
-		if (this.infoPopover) {
-			this.infoPopover.hidden = !open;
-		}
-		if (this.infoButton) {
-			this.infoButton.setAttribute('aria-expanded', String(open));
-		}
-		if (open) {
-			this.attachGlobalInfoEvents();
-		} else {
-			this.detachGlobalInfoEvents();
-		}
-	}
-
-	private attachGlobalInfoEvents() {
-		if (this.globalInfoController) {
-			return;
-		}
-		this.globalInfoController = new AbortController();
-		const { signal } = this.globalInfoController;
-		document.addEventListener('click', this.onDocumentClick, { capture: true, signal });
-		document.addEventListener('keydown', this.onDocumentKeydown, { signal });
-	}
-
-	private detachGlobalInfoEvents() {
-		this.globalInfoController?.abort();
-		this.globalInfoController = null;
 	}
 
 	private getThemeColors() {

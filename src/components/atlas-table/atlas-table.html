@@ -3,20 +3,7 @@
 		<div class="title-row">
 			<h3 class="table-title"></h3>
 			<div class="info-wrap">
-				<button class="info-button" type="button" aria-label="More info" aria-expanded="false" hidden>
-					<span class="info-icon" aria-hidden="true">i</span>
-				</button>
-				<div class="info-popover" role="dialog" aria-label="Table info" hidden>
-					<div class="info-card">
-						<div class="info-header">
-							<span class="info-title">Details</span>
-							<button class="info-close" type="button" aria-label="Close info">Close</button>
-						</div>
-						<div class="info-body">
-							<slot name="info"></slot>
-						</div>
-					</div>
-				</div>
+				<atlas-popup class="info-popup"></atlas-popup>
 			</div>
 			<div class="column-toggle">
 				<button class="column-toggle-button" type="button" hidden>Columns</button>

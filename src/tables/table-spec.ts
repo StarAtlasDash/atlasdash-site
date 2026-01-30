@@ -105,7 +105,11 @@ export function applyTableRenderPlan(
 	}
 
 	upsertSlot(element, 'description', plan.descriptionHtml);
-	upsertSlot(element, 'info', plan.infoHtml);
+	if (typeof (element as HTMLElement & { setInfoContent?: (html: string | null) => void }).setInfoContent === 'function') {
+		(element as HTMLElement & { setInfoContent?: (html: string | null) => void }).setInfoContent?.(plan.infoHtml ?? null);
+	} else {
+		upsertSlot(element, 'info', plan.infoHtml);
+	}
 
 	if (typeof element.setTableData !== 'function') {
 		throw new Error('Expected <atlas-table> element with setTableData().');

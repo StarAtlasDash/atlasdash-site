@@ -179,7 +179,11 @@ export function applyChartRenderPlan(
 	}
 
 	upsertSlot(element, 'description', plan.descriptionHtml);
-	upsertSlot(element, 'info', plan.infoHtml);
+	if (typeof (element as HTMLElement & { setInfoContent?: (html: string | null) => void }).setInfoContent === 'function') {
+		(element as HTMLElement & { setInfoContent?: (html: string | null) => void }).setInfoContent?.(plan.infoHtml ?? null);
+	} else {
+		upsertSlot(element, 'info', plan.infoHtml);
+	}
 
 	if (typeof element.setOption !== 'function') {
 		throw new Error('Expected <atlas-chart> element with setOption().');
