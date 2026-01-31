@@ -247,7 +247,15 @@ export function buildChartOption(spec: ChartSpec, data: QueryResponseData): echa
 			type: useTimeAxis ? 'time' : 'category',
 			data: useTimeAxis ? undefined : xValues.map((value) => String(value ?? '')),
 			name: spec.xAxis.label,
-			axisLabel: shouldRotateXAxis ? { rotate: 35 } : undefined,
+			axisLabel: shouldRotateXAxis ? { rotate: 45 } : undefined,
+			axisTick: {
+				show: true,
+				length: 6,
+				lineStyle: {
+					type: 'dashed',
+					color: '#ccc'
+				},
+			},
 		},
 		yAxis: buildYAxis(spec, normalizedSeries, allowSecondaryAxis),
 		series: seriesForOption,
@@ -258,8 +266,11 @@ export function buildChartOption(spec: ChartSpec, data: QueryResponseData): echa
 	if (zoomConfig?.items.length) {
 		option.dataZoom = zoomConfig.items;
 	}
+	const baseGrid = { left: 24, right: 48, containLabel: true };
 	if (zoomConfig?.gridBottom !== undefined) {
-		option.grid = { bottom: zoomConfig.gridBottom };
+		option.grid = { ...baseGrid, bottom: zoomConfig.gridBottom };
+	} else {
+		option.grid = { ...baseGrid, bottom: 10 };
 	}
 	if (lockYAxisMax) {
 		applyFixedYAxisMax(option, normalizedSeries, spec, allowSecondaryAxis, roundYAxisMax);
@@ -628,6 +639,10 @@ function buildYAxis(
 			min: primary.min,
 			max: primary.max,
 			position: primary.position,
+			nameLocation: primary.label ? ('middle' as const) : undefined,
+			nameRotate: primary.label ? 90 : undefined,
+			nameMoveOverlap: true,
+			axisLabel: { margin: 8 },
 		};
 	}
 
@@ -638,6 +653,12 @@ function buildYAxis(
 			min: axis.min,
 			max: axis.max,
 			position: axis.position ?? (index === 1 ? 'right' : 'left'),
+			alignTicks: true,
+			nameLocation: axis.label ? ('middle' as const) : undefined,
+			nameRotate: axis.label ? (index === 1 ? -90 : 90) : undefined,
+			nameMoveOverlap: true,
+			axisLabel: { margin: 8 },
+			splitLine: index === 0 ? { show: true } : { show: false },
 		}));
 		return axes.length === 1 ? axes[0] : axes;
 	}
@@ -655,10 +676,22 @@ function buildYAxis(
 				min: primary.min,
 				max: primary.max,
 				position: primary.position ?? 'left',
+				alignTicks: true,
+				nameLocation: primary.label ? ('middle' as const) : undefined,
+				nameRotate: primary.label ? 90 : undefined,
+				nameMoveOverlap: true,
+				axisLabel: { margin: 8 },
+				splitLine: { show: true },
 			},
 			{
 				type: 'value' as const,
 				position: 'right',
+				alignTicks: true,
+				nameLocation: 'middle' as const,
+				nameRotate: -90,
+				nameMoveOverlap: true,
+				axisLabel: { margin: 8 },
+				splitLine: { show: false },
 			},
 		];
 	}
@@ -669,6 +702,7 @@ function buildYAxis(
 		min: primary.min,
 		max: primary.max,
 		position: primary.position,
+		nameMoveOverlap: true,
 	};
 }
 
@@ -821,12 +855,13 @@ function trimAxisMax(value: number) {
 		return value;
 	}
 	const padded = value * 1.1;
+	const significantDigits = 2;
 	const exponent = Math.floor(Math.log10(padded));
-	const base = Math.pow(10, exponent - 1);
+	const base = Math.pow(10, exponent - (significantDigits - 1));
 	if (!Number.isFinite(base) || base === 0) {
 		return padded;
 	}
-	return Math.floor(padded / base) * base;
+	return Math.ceil(padded / base) * base;
 }
 
 function computeAxisMax(series: echarts.SeriesOption[]): Map<number, number> {

@@ -1,11 +1,9 @@
 {
   "rows": [
     [
-      { "id": "dau-stacked", "span": 2, "minHeight": 480 }
-    ],
-    [
       { "id": "line-chart", "span": 1, "minHeight": 480 },
-      { "id": "ecosystem-activity", "span": 1, "minHeight": 480 }
-    ]
+      { "id": "dau-atlas-sol", "span": 1, "minHeight": 480 }
+    ],
+    [{ "id": "asset-sales-leaderboard-7d", "span": 2, "minHeight": 480 }]
   ]
 }

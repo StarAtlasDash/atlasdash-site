@@ -155,6 +155,7 @@
 .data-table th.is-numeric,
 .data-table td.is-numeric {
 	text-align: right;
+	font-family: var(--atlas-table-numeric-font, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace);
 }
 
 .data-table thead {

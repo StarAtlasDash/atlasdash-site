@@ -41,3 +41,12 @@
 		flex-direction: column;
 	}
 }
+
+
+div[slot="description"] p:first-child {
+	margin-top: 0;
+}
+
+div[slot="description"] p:last-child {
+	margin-bottom: 0;
+}

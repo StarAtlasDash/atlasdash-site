@@ -1,48 +1,5 @@
 [
   {
-    "id": "dau-stacked",
-    "title": "Daily Active Users",
-    "label": "Ecosystem",
-    "chartType": "stacked-bar",
-    "xWindowDays": 365,
-    "query": {
-      "source": "flipside",
-      "dataset": "sa-activity"
-    },
-    "xAxis": {
-      "field": "DATE",
-      "type": "category",
-      "labelDensity": 0.85
-    },
-    "sort": {
-      "field": "DATE",
-      "order": "asc",
-      "type": "date"
-    },
-    "series": [
-      {
-        "name": "DAU in SAGE",
-        "field": "ACTIVE_PLAYER_PROFILES_SB",
-        "type": "bar",
-        "stack": "total"
-      },
-      {
-        "name": "DAU in rest of Ecosystem",
-        "derive": {
-          "op": "subtract",
-          "fields": [
-            "ACTIVE_USERS_ALL",
-            "ACTIVE_PLAYER_PROFILES_SB"
-          ]
-        },
-        "type": "bar",
-        "stack": "total"
-      }
-    ],
-    "descriptionMd": "Daily Active Users (DAU) in SAGE represents the number of unique wallets playing SAGE: Starbased on a given day. DAU in Ecosystem represents the wallets interacting with the broader Star Atlas ecosystem (e.g., Lockers, Marketplace). *[Data as of yesterday]*",
-    "infoMd": "Multi-paragraph context and methodology go here.\n\nThis slot is optional and only shows when provided."
-  },
-  {
     "id": "line-chart",
     "title": "Daily Active Users",
     "label": "Ecosystem",
@@ -56,6 +13,9 @@
       "field": "DATE",
       "type": "category"
     },
+    "yAxis": {
+      "label": "Wallets"
+    },
     "sort": {
       "field": "DATE",
       "order": "asc",
@@ -66,8 +26,41 @@
       "valueField": "WALLETS",
       "type": "line"
     },
-    "descriptionMd": "Daily Active Users (DAU) in SAGE represents the number of unique wallets playing SAGE: Starbased on a given day. DAU in Ecosystem represents the wallets interacting with the broader Star Atlas ecosystem (e.g., Lockers, Marketplace). *[Data as of yesterday]*",
-    "infoMd": "Multi-paragraph context and methodology go here.\n\nThis slot is optional and only shows when provided."
+    "descriptionMd": "Shows how many unique wallets interact with each Star Atlas program per day, with a 7-day rolling average for trend clarity.",
+    "infoMd": "Every action in Star Atlas — trading, claiming, locking tokens, managing fleets, or operating starbases — leaves an on-chain footprint. This chart tracks those footprints across the core programs that make up the SAGE and broader Star Atlas ecosystem. By counting unique wallets that successfully interact with each program per day, the data shows where players are actually active, not just where assets exist."
+  },
+  {
+    "id": "dau-atlas-sol",
+    "title": "DAU vs ATLAS/SOL",
+    "label": "Ecosystem",
+    "chartType": "line",
+    "xWindowDays": 365,
+    "enableSecondaryAxis": true,
+    "yAxes": [
+      { "label": "DAU", "position": "left" },
+      { "label": "ATLAS/SOL", "position": "right" }
+    ],
+    "query": {
+      "source": "flipside",
+      "dataset": "dau-atlas-sol"
+    },
+    "xAxis": {
+      "field": "DATE",
+      "type": "category"
+    },
+    "sort": {
+      "field": "DATE",
+      "order": "asc",
+      "type": "date"
+    },
+    "seriesFromColumns": {
+      "fields": [
+        { "field": "DAU", "name": "DAU", "type": "line", "yAxisIndex": 0 },
+        { "field": "ATLAS_SOL", "name": "ATLAS/SOL", "type": "line", "yAxisIndex": 1 }
+      ]
+    },
+    "descriptionMd": "Shows how ATLAS price movements relate to daily active wallets in SAGE Starbased",
+    "infoMd": "Market prices and player activity influence each other, but the relationship is not always obvious. This chart places the ATLAS/SOL price alongside daily active wallets in SAGE: Starbased to show how economic conditions and on-chain participation move over time. By aligning price data with actual wallet activity on the same days, the chart helps distinguish periods where engagement grows alongside price from periods where activity diverges, offering a clearer view of how player behavior and token valuation interact."
   },
   {
     "id": "fleet-activity-sage",
@@ -83,6 +76,9 @@
       "field": "DATE",
       "type": "category",
       "labelDensity": 1
+    },
+    "yAxis": {
+      "label": "Fleets"
     },
     "sort": {
       "field": "DATE",
@@ -119,6 +115,9 @@
     "xAxis": {
       "field": "DATE",
       "type": "category"
+    },
+    "yAxis": {
+      "label": "ATLAS"
     },
     "sort": {
       "field": "DATE",

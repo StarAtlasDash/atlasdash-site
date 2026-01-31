@@ -1,16 +1,16 @@
 [
   {
-    "id": "fleet-activity-table",
-    "title": "Ship Trading Volume (last 7 days)",
-    "label": "Game Economy",
-    "descriptionMd": "Trading volume over the last 7 days, broken down by ship.",
-    "infoMd": "Tables support column filters, visibility toggles, and sorting. Drag a header to reorder columns.",
+    "id": "asset-sales-leaderboard-7d",
+    "title": "Asset Trading Volume (last 7 days)",
+    "label": "Ecosystem",
+    "descriptionMd": "Weekly Trading Volume and Average Price rank ships and claim stakes by total marketplace volume over the last 7 days, showing both traded amount and average execution price.",
+    "infoMd": "Trading activity on the Galactic Marketplace reflects what players currently value and actively exchange. This chart shows the most-traded ships and claim stakes over the past week, ranked by total trading volume, alongside the average price at which each asset changed hands. By combining volume and average price, the data highlights not just which assets are popular, but whether activity is driven by high turnover, high valuations, or both—offering a clear snapshot of short-term market demand across ships and claim stakes.",
     "query": {
       "source": "flipside",
       "dataset": "leaderboard-gm-1w"
     },
     "columns": [
-      { "field": "NAME", "label": "Ship" },
+      { "field": "NAME", "label": "Asset" },
       { "field": "TRADING_VOLUME", "label": "Trading Volume" },
       { "field": "AMOUNT", "label": "Amount" },
       { "field": "AVG_PRICE", "label": "Average Price" }
