@@ -14,7 +14,8 @@
       "type": "category"
     },
     "yAxis": {
-      "label": "Wallets"
+      "label": "Wallets",
+      "decimals": 0
     },
     "sort": {
       "field": "DATE",
@@ -37,8 +38,8 @@
     "xWindowDays": 365,
     "enableSecondaryAxis": true,
     "yAxes": [
-      { "label": "DAU", "position": "left" },
-      { "label": "ATLAS/SOL", "position": "right" }
+      { "label": "DAU", "position": "left", "decimals": 0 },
+      { "label": "ATLAS/SOL", "position": "right", "decimals": 0 }
     ],
     "query": {
       "source": "flipside",
@@ -64,9 +65,9 @@
   },
   {
     "id": "fleet-activity-sage",
-    "title": "Fleet Activity SAGE",
+    "title": "Fleet Activity (SAGE)",
     "label": "Game Economy",
-    "chartType": "stacked-bar",
+    "chartType": "area",
     "xWindowDays": 365,
     "query": {
       "source": "flipside",
@@ -78,7 +79,8 @@
       "labelDensity": 1
     },
     "yAxis": {
-      "label": "Fleets"
+      "label": "Fleets",
+      "decimals": 0
     },
     "sort": {
       "field": "DATE",
@@ -87,12 +89,76 @@
     },
     "seriesFromColumns": {
       "fields": [
-        { "field": "SCANNING_FLEETS_AVG", "name": "Scanning", "type": "bar", "stack": "total" },
-        { "field": "MINING_FLEETS_AVG", "name": "Mining", "type": "bar", "stack": "total" },
-        { "field": "CARGO_FLEETS_AVG", "name": "Cargo", "type": "bar", "stack": "total" }
+        { "field": "SCANNING_FLEETS_AVG", "name": "Scanning", "type": "area", "stack": "total" },
+        { "field": "MINING_FLEETS_AVG", "name": "Mining", "type": "area", "stack": "total" },
+        { "field": "CARGO_FLEETS_AVG", "name": "Cargo", "type": "area", "stack": "total" }
       ]
     },
     "description": "SAGE Fleets assigned to the various gameplay loops (scanning, mining, cargo) per day"
+  },
+  {
+    "id": "sb-raw-materials-trading-volume-gm",
+    "title": "Raw Materials Trading Volume (GM)",
+    "label": "Game Economy",
+    "chartType": "stacked-bar",
+    "xWindowDays": 180,
+    "query": {
+      "source": "flipside",
+      "dataset": "sb-raw-materials-trading-volume-gm"
+    },
+    "xAxis": {
+      "field": "DATE",
+      "type": "category"
+    },
+    "yAxis": {
+      "label": "ATLAS",
+      "decimals": 0
+    },
+    "sort": {
+      "field": "DATE",
+      "order": "asc",
+      "type": "date"
+    },
+    "seriesFromField": {
+      "nameField": "SYMBOL",
+      "valueField": "ATLAS_VOLUME",
+      "type": "bar",
+      "stack": "total"
+    },
+    "description": "Trading volume in ATLAS for raw materials at the Galactic Marketplace"
+  },
+  {
+    "id": "sb-dau-gameloops",
+    "title": "DAU SAGE Gameloops",
+    "label": "Game Economy",
+    "chartType": "area",
+    "xWindowDays": 180,
+    "query": {
+      "source": "flipside",
+      "dataset": "sb-dau-gameloops"
+    },
+    "xAxis": {
+      "field": "DATE",
+      "type": "category"
+    },
+    "yAxis": {
+      "label": "Profiles",
+      "decimals": 0
+    },
+    "sort": {
+      "field": "DATE",
+      "order": "asc",
+      "type": "date"
+    },
+    "seriesFromColumns": {
+      "fields": [
+        { "field": "DAU_SCANNING_AVG", "name": "Scanning", "type": "area", "stack": "total" },
+        { "field": "DAU_MINING_AVG", "name": "Mining", "type": "area", "stack": "total" },
+        { "field": "DAU_CRAFTING_AVG", "name": "Crafting", "type": "area", "stack": "total" },
+        { "field": "DAU_UPGRADING_AVG", "name": "Upgrading", "type": "area", "stack": "total" }
+      ]
+    },
+    "description": "This data set shows the weekly average of active player profiles in the four current gameloops"
   },
   {
     "id": "atlas-emissions",
@@ -117,7 +183,8 @@
       "type": "category"
     },
     "yAxis": {
-      "label": "ATLAS"
+      "label": "ATLAS",
+      "decimals": 0
     },
     "sort": {
       "field": "DATE",

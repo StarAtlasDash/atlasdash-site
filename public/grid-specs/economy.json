@@ -1,10 +1,7 @@
 {
   "rows": [
-    [
-      { "id": "fleet-activity-sage", "span": 2, "minHeight": 480 }
-    ],
-    [
-      { "id": "fleet-activity-table", "span": 2, "minHeight": 480 }
-    ]
+		[{ "id": "sb-raw-materials-trading-volume-gm", "span": 2, "minHeight": 480 }],
+		[{ "id": "sb-dau-gameloops", "span": 2, "minHeight": 480 }],
+		[{ "id": "fleet-activity-sage", "span": 2, "minHeight": 480 }]
   ]
 }

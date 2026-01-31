@@ -38,6 +38,7 @@ export interface ChartYAxisSpec {
 	min?: number;
 	max?: number;
 	position?: 'left' | 'right';
+	decimals?: number;
 }
 
 export interface ChartSeriesSpec {
@@ -219,20 +220,44 @@ export function buildChartOption(spec: ChartSpec, data: QueryResponseData): echa
 
 	if (spec.seriesFromField) {
 		series.push(
-			...buildSeriesFromField(spec, seriesFromField!, rows, xValues, useTimeAxis, columnTypes)
+			...buildSeriesFromField(
+				spec,
+				seriesFromField!,
+				rows,
+				xValues,
+				useTimeAxis,
+				columnTypes,
+				allowSecondaryAxis
+			)
 		);
 	}
 
 	if (seriesFromColumns) {
 		series.push(
-			...buildSeriesFromColumns(spec, seriesFromColumns, rows, xValues, useTimeAxis, columnTypes)
+			...buildSeriesFromColumns(
+				spec,
+				seriesFromColumns,
+				rows,
+				xValues,
+				useTimeAxis,
+				columnTypes,
+				allowSecondaryAxis
+			)
 		);
 	}
 
 	if (explicitSeries && explicitSeries.length) {
 		series.push(
 			...explicitSeries.map((seriesSpec) =>
-				buildSeriesFromSpec(spec, seriesSpec, rows, xValues, useTimeAxis, columnTypes)
+				buildSeriesFromSpec(
+					spec,
+					seriesSpec,
+					rows,
+					xValues,
+					useTimeAxis,
+					columnTypes,
+					allowSecondaryAxis
+				)
 			)
 		);
 	}
@@ -259,6 +284,10 @@ export function buildChartOption(spec: ChartSpec, data: QueryResponseData): echa
 		},
 		yAxis: buildYAxis(spec, normalizedSeries, allowSecondaryAxis),
 		series: seriesForOption,
+		tooltip: {
+			trigger: 'axis',
+			order: 'seriesDesc',
+		},
 	};
 	if (shadowConfig?.legendData.length) {
 		option.legend = { data: shadowConfig.legendData };
@@ -266,7 +295,7 @@ export function buildChartOption(spec: ChartSpec, data: QueryResponseData): echa
 	if (zoomConfig?.items.length) {
 		option.dataZoom = zoomConfig.items;
 	}
-	const baseGrid = { left: 24, right: 48, containLabel: true };
+	const baseGrid = { left: 32, right: 48, containLabel: true };
 	if (zoomConfig?.gridBottom !== undefined) {
 		option.grid = { ...baseGrid, bottom: zoomConfig.gridBottom };
 	} else {
@@ -500,10 +529,14 @@ function makeSeriesOption(params: {
 	values: QueryValue[];
 	xValues: QueryValue[];
 	useTimeAxis: boolean;
+	decimals?: number;
 }): echarts.SeriesOption {
+	const roundedValues = params.decimals === undefined
+		? params.values
+		: params.values.map((value) => roundNumericValue(value, params.decimals));
 	const data = params.useTimeAxis
-		? params.values.map((value, idx) => [params.xValues[idx], value])
-		: params.values;
+		? roundedValues.map((value, idx) => [params.xValues[idx], value])
+		: roundedValues;
 	const isLine = params.seriesType === 'line';
 	return {
 		name: params.name,
@@ -522,12 +555,14 @@ function buildSeriesFromSpec(
 	rows: QueryRow[],
 	xValues: QueryValue[],
 	useTimeAxis: boolean,
-	columnTypes: Map<string, string>
+	columnTypes: Map<string, string>,
+	allowSecondaryAxis: boolean
 ): echarts.SeriesOption {
 	const seriesType = resolveSeriesType(spec, seriesSpec);
 	const isArea = seriesType === 'line' && (seriesSpec.type === 'area' || spec.chartType === 'area');
 	const defaultStack = spec.chartType === 'stacked-bar' && seriesType === 'bar' ? 'total' : undefined;
 	const values = rows.map((row) => resolveSeriesValue(row, seriesSpec, columnTypes));
+	const decimals = getAxisDecimals(spec, seriesSpec.yAxisIndex ?? 0, allowSecondaryAxis);
 
 	return makeSeriesOption({
 		name: seriesSpec.name,
@@ -538,6 +573,7 @@ function buildSeriesFromSpec(
 		values,
 		xValues,
 		useTimeAxis,
+		decimals,
 	});
 }
 
@@ -547,7 +583,8 @@ function buildSeriesFromField(
 	rows: QueryRow[],
 	xValues: QueryValue[],
 	useTimeAxis: boolean,
-	columnTypes: Map<string, string>
+	columnTypes: Map<string, string>,
+	allowSecondaryAxis: boolean
 ): echarts.SeriesOption[] {
 	const chartSeriesType = spec.chartType === 'stacked-bar' ? 'bar' : spec.chartType;
 	const nameField = source.nameField;
@@ -581,6 +618,7 @@ function buildSeriesFromField(
 			const xKey = String(xValue ?? '');
 			return seriesMap.get(name)?.get(xKey) ?? null;
 		});
+		const decimals = getAxisDecimals(spec, source.yAxisIndex ?? 0, allowSecondaryAxis);
 
 		return makeSeriesOption({
 			name,
@@ -591,6 +629,7 @@ function buildSeriesFromField(
 			values,
 			xValues,
 			useTimeAxis,
+			decimals,
 		});
 	});
 }
@@ -601,7 +640,8 @@ function buildSeriesFromColumns(
 	rows: QueryRow[],
 	xValues: QueryValue[],
 	useTimeAxis: boolean,
-	columnTypes: Map<string, string>
+	columnTypes: Map<string, string>,
+	allowSecondaryAxis: boolean
 ): echarts.SeriesOption[] {
 	const chartSeriesType = spec.chartType === 'stacked-bar' ? 'bar' : spec.chartType;
 	return source.fields.map((fieldSpec) => {
@@ -612,6 +652,7 @@ function buildSeriesFromColumns(
 		const isArea = seriesType === 'line' && (fieldSpec.type === 'area' || spec.chartType === 'area');
 		const defaultStack = spec.chartType === 'stacked-bar' && seriesType === 'bar' ? 'total' : undefined;
 		const values = rows.map((row) => coerceValue(row[fieldSpec.field], columnTypes.get(fieldSpec.field)));
+		const decimals = getAxisDecimals(spec, fieldSpec.yAxisIndex ?? 0, allowSecondaryAxis);
 
 		return makeSeriesOption({
 			name: fieldSpec.name ?? fieldSpec.field,
@@ -622,6 +663,7 @@ function buildSeriesFromColumns(
 			values,
 			xValues,
 			useTimeAxis,
+			decimals,
 		});
 	});
 }
@@ -647,19 +689,21 @@ function buildYAxis(
 	}
 
 	if (spec.yAxes && spec.yAxes.length) {
-		const axes = spec.yAxes.map((axis, index) => ({
-			type: 'value' as const,
-			name: axis.label,
-			min: axis.min,
-			max: axis.max,
-			position: axis.position ?? (index === 1 ? 'right' : 'left'),
-			alignTicks: true,
-			nameLocation: axis.label ? ('middle' as const) : undefined,
-			nameRotate: axis.label ? (index === 1 ? -90 : 90) : undefined,
-			nameMoveOverlap: true,
-			axisLabel: { margin: 8 },
-			splitLine: index === 0 ? { show: true } : { show: false },
-		}));
+		const axes = spec.yAxes.map((axis, index) => {
+			return ({
+				type: 'value' as const,
+				name: axis.label,
+				min: axis.min,
+				max: axis.max,
+				position: axis.position ?? (index === 1 ? 'right' : 'left'),
+				alignTicks: true,
+				nameLocation: axis.label ? ('middle' as const) : undefined,
+				nameRotate: axis.label ? (index === 1 ? -90 : 90) : undefined,
+				nameMoveOverlap: true,
+				axisLabel: { margin: 8 },
+				splitLine: index === 0 ? { show: true } : { show: false },
+			});
+		});
 		return axes.length === 1 ? axes[0] : axes;
 	}
 
@@ -862,6 +906,32 @@ function trimAxisMax(value: number) {
 		return padded;
 	}
 	return Math.ceil(padded / base) * base;
+}
+
+function resolveAxisDecimals(decimals: number | undefined) {
+	if (decimals === undefined || decimals === null) {
+		return undefined;
+	}
+	return Math.max(0, Math.min(6, Math.round(decimals)));
+}
+
+function getAxisDecimals(spec: ChartSpec, axisIndex: number, allowSecondaryAxis: boolean) {
+	if (allowSecondaryAxis && spec.yAxes?.length) {
+		return resolveAxisDecimals(spec.yAxes[axisIndex]?.decimals);
+	}
+	return resolveAxisDecimals(spec.yAxis?.decimals);
+}
+
+function roundNumericValue(value: QueryValue, decimals: number) {
+	if (value == null) {
+		return value;
+	}
+	const numeric = typeof value === 'number' ? value : Number(value);
+	if (!Number.isFinite(numeric)) {
+		return value;
+	}
+	const factor = Math.pow(10, decimals);
+	return Math.round(numeric * factor) / factor;
 }
 
 function computeAxisMax(series: echarts.SeriesOption[]): Map<number, number> {
