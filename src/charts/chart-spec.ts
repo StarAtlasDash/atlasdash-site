@@ -533,7 +533,7 @@ function makeSeriesOption(params: {
 }): echarts.SeriesOption {
 	const roundedValues = params.decimals === undefined
 		? params.values
-		: params.values.map((value) => roundNumericValue(value, params.decimals));
+		: params.values.map((value) => roundNumericValue(value, params.decimals ?? 0));
 	const data = params.useTimeAxis
 		? roundedValues.map((value, idx) => [params.xValues[idx], value])
 		: roundedValues;
