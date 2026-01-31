@@ -179,11 +179,7 @@ export function applyChartRenderPlan(
 	}
 
 	upsertSlot(element, 'description', plan.descriptionHtml);
-	if (typeof (element as HTMLElement & { setInfoContent?: (html: string | null) => void }).setInfoContent === 'function') {
-		(element as HTMLElement & { setInfoContent?: (html: string | null) => void }).setInfoContent?.(plan.infoHtml ?? null);
-	} else {
-		upsertSlot(element, 'info', plan.infoHtml);
-	}
+	upsertPopupSlot(element, 'info', plan.infoHtml);
 
 	if (typeof element.setOption !== 'function') {
 		throw new Error('Expected <atlas-chart> element with setOption().');
@@ -1085,4 +1081,13 @@ function upsertSlot(element: HTMLElement, slotName: string, html?: string) {
 	if (!existing) {
 		element.appendChild(slotEl);
 	}
+}
+
+function upsertPopupSlot(element: HTMLElement, slotName: string, html?: string) {
+	const popup = element.shadowRoot?.querySelector('atlas-popup.info-popup') as HTMLElement | null;
+	if (popup) {
+		upsertSlot(popup, slotName, html);
+		return;
+	}
+	upsertSlot(element, slotName, html);
 }

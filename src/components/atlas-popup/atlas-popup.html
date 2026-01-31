@@ -1,6 +1,8 @@
 <div class="popup">
 	<button class="popup-trigger" type="button" aria-label="More info" aria-expanded="false" hidden>
-		<span class="popup-icon" aria-hidden="true">i</span>
+		<slot name="trigger">
+			<span class="popup-icon" aria-hidden="true">i</span>
+		</slot>
 	</button>
 	<div class="popup-floating" role="dialog" aria-label="Info" hidden>
 		<div class="popup-arrow" aria-hidden="true"></div>
@@ -9,7 +11,9 @@
 				<span class="popup-title">Details</span>
 				<button class="popup-close" type="button" aria-label="Close info">Close</button>
 			</div>
-			<div class="popup-body"></div>
+			<div class="popup-body">
+				<slot name="info"></slot>
+			</div>
 		</div>
 	</div>
 </div>

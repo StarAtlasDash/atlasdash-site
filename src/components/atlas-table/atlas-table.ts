@@ -83,14 +83,11 @@ export class AtlasTable extends BaseComponentElement {
 	@bindTemplateElement('slot[name="description"]')
 	private descriptionSlot: HTMLSlotElement | null = null;
 
-	@bindTemplateElement('.info-popup')
-	private infoPopup: (HTMLElement & { setContentHtml?: (html: string | null) => void }) | null = null;
+	@bindTemplateElement('.column-toggle-list')
+	private columnToggleList: HTMLDivElement | null = null;
 
-	@bindTemplateElement('.column-toggle-button')
-	private columnToggleButton: HTMLButtonElement | null = null;
-
-	@bindTemplateElement('.column-toggle-panel')
-	private columnTogglePanel: HTMLDivElement | null = null;
+	@bindTemplateElement('.column-toggle')
+	private columnToggleWrap: HTMLDivElement | null = null;
 
 	@bindTemplateElement('.table-head')
 	private tableHeadEl: HTMLTableSectionElement | null = null;
@@ -104,10 +101,7 @@ export class AtlasTable extends BaseComponentElement {
 	private table: ReturnType<typeof createTable<QueryRow>> | null = null;
 	private tablePlan: TableDataPlan | null = null;
 	private tableState: TanstackTableState = { ...DEFAULT_TABLE_STATE };
-	private infoContentHtml: string | null = null;
 	private loading = true;
-	private columnPanelOpen = false;
-	private globalColumnPanelController: AbortController | null = null;
 	private dragColumnId: string | null = null;
 
 	constructor() {
@@ -120,13 +114,6 @@ export class AtlasTable extends BaseComponentElement {
 		this.setLoading(false);
 		if (this.isConnected) {
 			this.render();
-		}
-	}
-
-	setInfoContent(html: string | null) {
-		this.infoContentHtml = html;
-		if (this.isConnected) {
-			this.updateInfoContent();
 		}
 	}
 
@@ -150,23 +137,21 @@ export class AtlasTable extends BaseComponentElement {
 			this.labelEl.toggleAttribute('hidden', !this.label);
 		}
 		this.updateDescription();
-		this.updateInfoContent();
 		this.updateLoadingState();
-		this.updateColumnToggleVisibility();
+		this.renderColumnTogglePanel();
 		this.renderTable();
+		this.updateColumnToggleVisibility();
 	}
 
 	protected onConnected(): void {
-		this.bindColumnToggleEvents();
 		this.updateDescription();
-		this.updateInfoContent();
 		this.updateLoadingState();
-		this.updateColumnToggleVisibility();
+		this.renderColumnTogglePanel();
 		this.renderTable();
+		this.updateColumnToggleVisibility();
 	}
 
 	protected onDisconnected(): void {
-		this.unbindColumnToggleEvents();
 	}
 
 	protected onSlotChange = () => {
@@ -227,15 +212,19 @@ export class AtlasTable extends BaseComponentElement {
 		const tableHeadEl = this.tableHeadEl;
 		const tableBodyEl = this.tableBodyEl;
 		const tablePlan = this.tablePlan;
+		const focusState = this.captureFilterFocus();
 		tableHeadEl.innerHTML = '';
 		tableBodyEl.innerHTML = '';
 
 		const headerGroups = this.table.getHeaderGroups();
 		const stickyId = this.getStickyColumnId();
+		const showColumnToggle = !!tablePlan.enableColumnVisibilityToggles;
+		const lastHeaderRowIndex = Math.max(0, headerGroups.length - 1);
 
 		headerGroups.forEach((group, groupIndex) => {
 			const rowEl = document.createElement('tr');
-			group.headers.forEach((header) => {
+			const lastHeaderIndex = this.findLastHeaderIndex(group.headers);
+			group.headers.forEach((header, headerIndex) => {
 				const cell = document.createElement('th');
 				const column = header.column;
 				const meta = column.columnDef.meta as { dataType?: string } | undefined;
@@ -272,6 +261,16 @@ export class AtlasTable extends BaseComponentElement {
 						cell.classList.add('header');
 					}
 				}
+				if (
+					showColumnToggle &&
+					groupIndex === lastHeaderRowIndex &&
+					headerIndex === lastHeaderIndex &&
+					this.columnToggleWrap
+				) {
+					if (this.columnToggleWrap) {
+						cell.appendChild(this.columnToggleWrap);
+					}
+				}
 				rowEl.appendChild(cell);
 			});
 			tableHeadEl.appendChild(rowEl);
@@ -294,6 +293,10 @@ export class AtlasTable extends BaseComponentElement {
 						maxInput.type = 'number';
 						minInput.className = 'filter-input-range';
 						maxInput.className = 'filter-input-range';
+						minInput.dataset.filterColumn = column.id;
+						minInput.dataset.filterRole = 'min';
+						maxInput.dataset.filterColumn = column.id;
+						maxInput.dataset.filterRole = 'max';
 						minInput.classList.add('is-numeric');
 						maxInput.classList.add('is-numeric');
 						minInput.placeholder = 'Min';
@@ -310,6 +313,7 @@ export class AtlasTable extends BaseComponentElement {
 						const input = document.createElement('input');
 						input.type = 'text';
 						input.className = 'filter-input';
+						input.dataset.filterColumn = column.id;
 						input.placeholder = 'Filter...';
 						input.value = String(column.getFilterValue() ?? '');
 						input.addEventListener('input', (event) => {
@@ -358,19 +362,21 @@ export class AtlasTable extends BaseComponentElement {
 			});
 			tableBodyEl.appendChild(rowEl);
 		});
+
+		this.restoreFilterFocus(focusState);
 	}
 
 	private renderColumnTogglePanel() {
-		if (!this.tablePlan || !this.table || !this.columnTogglePanel) {
+		if (!this.tablePlan || !this.table || !this.columnToggleList) {
 			return;
 		}
+		this.columnToggleList.innerHTML = '';
 		if (!this.tablePlan.enableColumnVisibilityToggles) {
-			this.columnTogglePanel.innerHTML = '';
 			return;
 		}
 
-		this.columnTogglePanel.innerHTML = '';
-		this.table.getAllLeafColumns().forEach((column) => {
+		const columns = this.table.getAllLeafColumns();
+		columns.forEach((column) => {
 			if (!column.getCanHide()) {
 				return;
 			}
@@ -383,19 +389,16 @@ export class AtlasTable extends BaseComponentElement {
 			const text = document.createElement('span');
 			text.textContent = String(column.columnDef.header ?? column.id);
 			label.append(checkbox, text);
-			this.columnTogglePanel?.appendChild(label);
+			this.columnToggleList?.appendChild(label);
 		});
 	}
 
 	private updateColumnToggleVisibility() {
-		if (!this.columnToggleButton) {
+		if (!this.columnToggleWrap) {
 			return;
 		}
 		const showToggle = !!this.tablePlan?.enableColumnVisibilityToggles;
-		this.columnToggleButton.hidden = !showToggle;
-		if (!showToggle) {
-			this.setColumnPanelOpen(false);
-		}
+		this.columnToggleWrap.toggleAttribute('hidden', !showToggle);
 	}
 
 	private updateDescription() {
@@ -409,75 +412,66 @@ export class AtlasTable extends BaseComponentElement {
 		this.descriptionWrap.toggleAttribute('hidden', !hasSlot && !hasText);
 	}
 
-	private onDocumentKeydown = (event: KeyboardEvent) => {
-		if (event.key === 'Escape') {
-			this.setColumnPanelOpen(false);
-		}
-	};
-
-	private onDocumentClick = (event: MouseEvent) => {
-		const path = event.composedPath();
-		if (this.columnPanelOpen && this.columnTogglePanel && this.columnToggleButton) {
-			if (!path.includes(this.columnTogglePanel) && !path.includes(this.columnToggleButton)) {
-				this.setColumnPanelOpen(false);
-			}
-		}
-	};
-
-	private updateInfoContent() {
-		if (this.infoPopup) {
-			this.infoPopup.setContentHtml?.(this.infoContentHtml);
-		}
-	}
-
 	private updateLoadingState() {
 		if (this.loadingOverlayEl) {
 			this.loadingOverlayEl.hidden = !this.loading;
 		}
 	}
 
-	private bindColumnToggleEvents() {
-		this.columnToggleButton?.addEventListener('click', this.onColumnToggle);
+	private captureFilterFocus(): {
+		columnId: string;
+		role?: string;
+		selectionStart?: number | null;
+		selectionEnd?: number | null;
+	} | null {
+		if (!this.tableHeadEl) {
+			return null;
+		}
+		const active = this.contentRoot?.activeElement ?? null;
+		const input = active instanceof HTMLInputElement ? active : null;
+		if (!input || !this.tableHeadEl.contains(input)) {
+			return null;
+		}
+		const columnId = input.dataset.filterColumn;
+		if (!columnId) {
+			return null;
+		}
+		return {
+			columnId,
+			role: input.dataset.filterRole,
+			selectionStart: input.selectionStart,
+			selectionEnd: input.selectionEnd,
+		};
 	}
 
-	private unbindColumnToggleEvents() {
-		this.columnToggleButton?.removeEventListener('click', this.onColumnToggle);
-		this.detachColumnPanelEvents();
-	}
-
-	private onColumnToggle = () => {
-		this.setColumnPanelOpen(!this.columnPanelOpen);
-	};
-
-	private setColumnPanelOpen(open: boolean) {
-		if (!this.columnTogglePanel || !this.columnToggleButton) {
+	private restoreFilterFocus(
+		focusState: { columnId: string; role?: string; selectionStart?: number | null; selectionEnd?: number | null } | null
+	) {
+		if (!focusState || !this.tableHeadEl) {
 			return;
 		}
-		this.columnPanelOpen = open;
-		this.columnTogglePanel.hidden = !open;
-		this.columnToggleButton.setAttribute('aria-expanded', String(open));
-		this.renderColumnTogglePanel();
-		if (open) {
-			this.attachColumnPanelEvents();
-		} else {
-			this.detachColumnPanelEvents();
-		}
-	}
-
-	private attachColumnPanelEvents() {
-		if (this.globalColumnPanelController) {
+		const selector = focusState.role
+			? `input[data-filter-column=\"${focusState.columnId}\"][data-filter-role=\"${focusState.role}\"]`
+			: `input[data-filter-column=\"${focusState.columnId}\"]`;
+		const input = this.tableHeadEl.querySelector<HTMLInputElement>(selector);
+		if (!input) {
 			return;
 		}
-		this.globalColumnPanelController = new AbortController();
-		const { signal } = this.globalColumnPanelController;
-		document.addEventListener('click', this.onDocumentClick, { capture: true, signal });
-		document.addEventListener('keydown', this.onDocumentKeydown, { signal });
+		input.focus();
+		if (focusState.selectionStart != null && focusState.selectionEnd != null) {
+			input.setSelectionRange(focusState.selectionStart, focusState.selectionEnd);
+		}
 	}
 
-	private detachColumnPanelEvents() {
-		this.globalColumnPanelController?.abort();
-		this.globalColumnPanelController = null;
+	private findLastHeaderIndex(headers: Array<{ isPlaceholder: boolean }>): number {
+		for (let i = headers.length - 1; i >= 0; i -= 1) {
+			if (!headers[i].isPlaceholder) {
+				return i;
+			}
+		}
+		return Math.max(0, headers.length - 1);
 	}
+
 
 	private getStickyColumnId() {
 		if (!this.tablePlan?.stickyFirstColumn || !this.table) {

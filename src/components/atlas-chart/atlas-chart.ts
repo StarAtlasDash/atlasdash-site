@@ -50,9 +50,6 @@ export class AtlasChart extends BaseComponentElement {
 	@bindTemplateElement('.chart-canvas')
 	private chartCanvas: HTMLDivElement | null = null;
 
-	@bindTemplateElement('.info-popup')
-	private infoPopup: (HTMLElement & { setContentHtml?: (html: string | null) => void }) | null = null;
-
 	@bindTemplateElement('.loading-overlay')
 	private loadingOverlayEl: HTMLDivElement | null = null;
 
@@ -61,7 +58,6 @@ export class AtlasChart extends BaseComponentElement {
 	private pendingOption: echarts.EChartsOption | null = null;
 	private resizeHandle: number | null = null;
 	private lastOptionState = { chartType: '', noLegend: false };
-	private infoContentHtml: string | null = null;
 	private loading = true;
 
 	constructor() {
@@ -85,13 +81,6 @@ export class AtlasChart extends BaseComponentElement {
 		this.applyOption(opts);
 	}
 
-	setInfoContent(html: string | null) {
-		this.infoContentHtml = html;
-		if (this.isConnected) {
-			this.updateInfoContent();
-		}
-	}
-
 	setLoading(loading: boolean) {
 		if (this.loading === loading) {
 			return;
@@ -113,7 +102,6 @@ export class AtlasChart extends BaseComponentElement {
 		}
 
 		this.updateDescription();
-		this.updateInfoContent();
 		this.updateLoadingState();
 		this.reapplyOptionIfNeeded();
 		this.requestResize();
@@ -122,7 +110,6 @@ export class AtlasChart extends BaseComponentElement {
 	protected onConnected(): void {
 		this.initChart();
 		this.updateDescription();
-		this.updateInfoContent();
 		this.updateLoadingState();
 		this.applyOption();
 	}
@@ -425,12 +412,6 @@ export class AtlasChart extends BaseComponentElement {
 		this.descriptionEl.toggleAttribute('hidden', hasSlot || !hasText);
 		this.descriptionWrap.toggleAttribute('hidden', !hasSlot && !hasText);
 		this.requestResize();
-	}
-
-	private updateInfoContent() {
-		if (this.infoPopup) {
-			this.infoPopup.setContentHtml?.(this.infoContentHtml);
-		}
 	}
 
 	private updateLoadingState() {

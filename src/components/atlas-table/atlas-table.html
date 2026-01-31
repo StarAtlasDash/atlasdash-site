@@ -6,8 +6,15 @@
 				<atlas-popup class="info-popup"></atlas-popup>
 			</div>
 			<div class="column-toggle">
-				<button class="column-toggle-button" type="button" hidden>Columns</button>
-				<div class="column-toggle-panel" hidden></div>
+				<atlas-popup
+					class="column-toggle-popup"
+					title="Columns"
+					trigger-label="Manage columns"
+					dialog-label="Column visibility"
+				>
+					<img slot="trigger" src="/icons/columns.svg" alt="" />
+					<div class="column-toggle-list" slot="info"></div>
+				</atlas-popup>
 			</div>
 		</div>
 		<div class="table-label"></div>

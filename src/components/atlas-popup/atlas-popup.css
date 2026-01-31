@@ -17,12 +17,14 @@
 	justify-content: center;
 	width: 28px;
 	height: 28px;
-	border-radius: 999px;
-	border: 1px solid var(--line, #e5e7eb);
-	background: var(--surface, #f5f5f5);
-	color: var(--text, #1a1a1a);
+	border-radius: var(--popup-trigger-radius, 999px);
+	border: 1px solid var(--popup-trigger-border, var(--line, #e5e7eb));
+	background: var(--popup-trigger-bg, var(--surface, #f5f5f5));
+	color: var(--popup-trigger-color, var(--text, #1a1a1a));
 	cursor: pointer;
-	font-size: 0.9rem;
+	font-size: var(--popup-trigger-font-size, 0.9rem);
+	width: var(--popup-trigger-width, 28px);
+	height: var(--popup-trigger-height, 28px);
 	padding: 0;
 }
 
@@ -39,6 +41,12 @@
 	font-family: inherit;
 	font-weight: 700;
 	line-height: 1;
+}
+
+slot[name='trigger']::slotted(*) {
+	width: var(--popup-trigger-icon-size, 0.75rem);
+	height: var(--popup-trigger-icon-size, 0.75rem);
+	display: block;
 }
 
 .popup-floating {

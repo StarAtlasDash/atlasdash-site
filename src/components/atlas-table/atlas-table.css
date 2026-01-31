@@ -61,43 +61,6 @@
 }
 
 
-.column-toggle {
-	position: relative;
-	display: inline-flex;
-	align-items: center;
-}
-
-.column-toggle-button {
-	border: 1px solid var(--line, #e5e7eb);
-	background: var(--surface, #f5f5f5);
-	color: var(--text, #1a1a1a);
-	border-radius: 999px;
-	padding: 0.2rem 0.75rem;
-	font-size: 0.8rem;
-	cursor: pointer;
-}
-
-.column-toggle-button[hidden] {
-	display: none;
-}
-
-.column-toggle-panel {
-	position: absolute;
-	top: calc(100% + 0.5rem);
-	right: 0;
-	background: var(--bg, #ffffff);
-	border: 1px solid var(--line, #e5e7eb);
-	border-radius: 12px;
-	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-	padding: 0.6rem;
-	min-width: 200px;
-	z-index: 10;
-}
-
-.column-toggle-panel[hidden] {
-	display: none;
-}
-
 .column-toggle-item {
 	display: flex;
 	align-items: center;
@@ -109,6 +72,54 @@
 
 .column-toggle-item:last-child {
 	margin-bottom: 0;
+}
+
+.column-toggle-popup {
+	--popup-trigger-bg: #111111;
+	--popup-trigger-color: #ffffff;
+	--popup-trigger-radius: 4px;
+	--popup-trigger-border: transparent;
+	--popup-trigger-width: 1rem;
+	--popup-trigger-height: 100%;
+	--popup-trigger-icon-size: 0.75rem;
+	align-self: stretch;
+	height: 100%;
+	display: flex;
+	align-items: stretch;
+}
+
+.column-toggle-popup img[slot='trigger'] {
+	filter: invert(1) brightness(1.2);
+}
+
+.column-toggle-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+}
+
+.column-toggle-list input[type='checkbox'] {
+	accent-color: #111111;
+	background-color: #ffffff;
+}
+
+.data-table thead tr th:last-child {
+	position: relative;
+	padding-right: 2rem;
+}
+
+.data-table thead tr th:last-child .column-toggle {
+	position: absolute;
+	right: 0.25rem;
+	top: 0;
+	bottom: 0;
+	display: inline-flex;
+	align-items: center;
+	height: 100%;
+}
+
+.data-table thead tr th:last-child .sort-indicator {
+	margin-right: 0.5rem;
 }
 
 .table-area {
@@ -146,6 +157,13 @@
 	text-align: right;
 }
 
+.data-table thead {
+	position: sticky;
+	top: 0;
+	z-index: 3;
+	background: var(--surface, #f5f5f5);
+}
+
 .data-table thead th {
 	background: var(--surface, #f5f5f5);
 	color: var(--text, #1a1a1a);
@@ -153,16 +171,8 @@
 	position: relative;
 }
 
-.data-table thead th {
-	position: sticky;
-	top: 0;
-	z-index: 2;
-}
-
 .data-table thead tr.filter-row th {
-	top: var(--table-head-row-height, 36px);
 	background: var(--bg, #ffffff);
-	z-index: 1;
 }
 
 .data-table tbody tr:nth-child(even) td,
@@ -230,11 +240,15 @@
 }
 
 .data-table thead th.sticky-col {
-	z-index: 4;
+	position: sticky;
+	left: 0;
+	z-index: 6;
+	background: var(--surface, #f5f5f5);
 }
 
 .data-table thead tr.filter-row th.sticky-col {
-	z-index: 3;
+	z-index: 5;
+	background: var(--bg, #ffffff);
 }
 
 .table-description {
