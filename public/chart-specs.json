@@ -39,7 +39,7 @@
     "enableSecondaryAxis": true,
     "yAxes": [
       { "label": "DAU", "position": "left", "decimals": 0 },
-      { "label": "ATLAS/SOL", "position": "right", "decimals": 0 }
+      { "label": "ATLAS/SOL", "position": "right" }
     ],
     "query": {
       "source": "flipside",
