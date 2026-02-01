@@ -195,10 +195,6 @@ export class AtlasAnalyticsGrid extends BaseComponentElement {
 	}
 
 	private computeColumnCount(minColumnWidth: number): number {
-		if (window.innerWidth <= 480) {
-			return 1;
-		}
-
 		const width = Math.max(0, this.getBoundingClientRect().width);
 		if (!width) {
 			return 1;

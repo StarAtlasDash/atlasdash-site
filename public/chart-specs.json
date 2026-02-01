@@ -101,7 +101,14 @@
     "title": "Raw Materials Trading Volume (GM)",
     "label": "Game Economy",
     "chartType": "stacked-bar",
-    "xWindowDays": 180,
+    "xWindowDays": 365,
+    "xZoom": {
+      "showSlider": true,
+      "inside": false,
+      "windowDays": 30,
+      "zoomLock": false,
+      "brushSelect": false
+    },
     "query": {
       "source": "flipside",
       "dataset": "sb-raw-materials-trading-volume-gm"

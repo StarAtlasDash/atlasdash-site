@@ -239,8 +239,19 @@ export class AtlasTable extends BaseComponentElement {
 					const handler = column.getToggleSortingHandler();
 					if (handler) {
 						cell.addEventListener('click', handler as EventListener);
+						cell.addEventListener('keydown', (event) => {
+							if (event.key === 'Enter' || event.key === ' ') {
+								event.preventDefault();
+								(handler as EventListener)(event);
+							}
+						});
 					}
+					cell.setAttribute('tabindex', '0');
 					const sort = column.getIsSorted();
+					cell.setAttribute(
+						'aria-sort',
+						sort === 'asc' ? 'ascending' : sort === 'desc' ? 'descending' : 'none'
+					);
 					if (sort) {
 						const indicator = document.createElement('span');
 						indicator.className = 'sort-indicator';

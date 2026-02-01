@@ -42,6 +42,9 @@ export class AtlasPopup extends BaseComponentElement {
 	@bindTemplateElement('.popup-title')
 	private titleEl: HTMLElement | null = null;
 
+	@bindTemplateElement('.popup-body')
+	private bodyEl: HTMLDivElement | null = null;
+
 	@bindTemplateElement('slot[name="info"]')
 	private contentSlot: HTMLSlotElement | null = null;
 
@@ -52,6 +55,8 @@ export class AtlasPopup extends BaseComponentElement {
 	private hasContent = false;
 	private cleanupAutoUpdate: (() => void) | null = null;
 	private globalController: AbortController | null = null;
+	private lastFocused: HTMLElement | null = null;
+	private readonly instanceId = `popup-${Math.random().toString(36).slice(2, 10)}`;
 
 	constructor() {
 		super(template, style);
@@ -63,14 +68,35 @@ export class AtlasPopup extends BaseComponentElement {
 		}
 		if (this.floatingEl) {
 			this.floatingEl.setAttribute('aria-label', this.dialogLabel || 'Info');
+			this.floatingEl.setAttribute('aria-modal', 'true');
 		}
 		if (this.titleEl) {
 			this.titleEl.textContent = this.title || 'Details';
+			if (!this.titleEl.id) {
+				this.titleEl.id = `${this.instanceId}-title`;
+			}
+		}
+		if (this.bodyEl && !this.bodyEl.id) {
+			this.bodyEl.id = `${this.instanceId}-body`;
 		}
 
 		this.hasContent = this.hasSlotContent();
 		if (this.triggerEl) {
 			this.triggerEl.hidden = !this.hasContent;
+		}
+		if (this.floatingEl) {
+			if (this.titleEl && this.titleEl.textContent) {
+				this.floatingEl.setAttribute('aria-labelledby', this.titleEl.id);
+				this.floatingEl.removeAttribute('aria-label');
+			} else {
+				this.floatingEl.setAttribute('aria-label', this.dialogLabel || 'Info');
+				this.floatingEl.removeAttribute('aria-labelledby');
+			}
+			if (this.bodyEl && this.hasContent) {
+				this.floatingEl.setAttribute('aria-describedby', this.bodyEl.id);
+			} else {
+				this.floatingEl.removeAttribute('aria-describedby');
+			}
 		}
 		if (!this.hasContent) {
 			this.setOpen(false);
@@ -95,6 +121,7 @@ export class AtlasPopup extends BaseComponentElement {
 		this.closeEl?.addEventListener('click', this.onClose);
 		this.floatingEl?.addEventListener('click', this.onFloatingClick);
 		this.floatingEl?.addEventListener('mousedown', this.onFloatingMouseDown);
+		this.floatingEl?.addEventListener('keydown', this.onFloatingKeydown);
 	}
 
 	private unbindEvents() {
@@ -103,6 +130,7 @@ export class AtlasPopup extends BaseComponentElement {
 		this.closeEl?.removeEventListener('click', this.onClose);
 		this.floatingEl?.removeEventListener('click', this.onFloatingClick);
 		this.floatingEl?.removeEventListener('mousedown', this.onFloatingMouseDown);
+		this.floatingEl?.removeEventListener('keydown', this.onFloatingKeydown);
 		this.detachGlobalEvents();
 		this.stopAutoUpdate();
 	}
@@ -127,6 +155,26 @@ export class AtlasPopup extends BaseComponentElement {
 
 	private onFloatingMouseDown = (event: MouseEvent) => {
 		event.stopPropagation();
+	};
+
+	private onFloatingKeydown = (event: KeyboardEvent) => {
+		if (event.key !== 'Tab') {
+			return;
+		}
+		const focusable = this.getFocusableElements();
+		if (!focusable.length) {
+			return;
+		}
+		const first = focusable[0];
+		const last = focusable[focusable.length - 1];
+		const active = this.contentRoot.activeElement as HTMLElement | null;
+		if (event.shiftKey && active === first) {
+			event.preventDefault();
+			last.focus();
+		} else if (!event.shiftKey && active === last) {
+			event.preventDefault();
+			first.focus();
+		}
 	};
 
 	private onDocumentKeydown = (event: KeyboardEvent) => {
@@ -161,12 +209,20 @@ export class AtlasPopup extends BaseComponentElement {
 			this.triggerEl.setAttribute('aria-expanded', String(open));
 		}
 		if (open) {
+			this.lastFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
 			this.updatePosition();
 			this.startAutoUpdate();
 			this.attachGlobalEvents();
+			queueMicrotask(() => {
+				this.getFocusableElements()[0]?.focus();
+			});
 		} else {
 			this.stopAutoUpdate();
 			this.detachGlobalEvents();
+			if (this.lastFocused && document.contains(this.lastFocused)) {
+				this.lastFocused.focus();
+			}
+			this.lastFocused = null;
 		}
 	}
 
@@ -196,6 +252,17 @@ export class AtlasPopup extends BaseComponentElement {
 			}
 			return false;
 		});
+	}
+
+	private getFocusableElements() {
+		if (!this.floatingEl) {
+			return [];
+		}
+		return Array.from(
+			this.floatingEl.querySelectorAll<HTMLElement>(
+				'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])'
+			)
+		).filter((el) => !el.hasAttribute('disabled'));
 	}
 
 	private attachGlobalEvents() {

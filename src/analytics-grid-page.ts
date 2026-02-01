@@ -26,28 +26,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 		return;
 	}
 
-	const [gridResponse, chartResponse, tableResponse] = await Promise.all([
-		fetch(gridSpecPath),
-		fetch('/chart-specs.json'),
-		fetch('/table-specs.json'),
+	const fetchJson = async <T>(url: string, label: string): Promise<T | null> => {
+		try {
+			const response = await fetch(url);
+			if (!response.ok) {
+				console.warn(`⚠️ Failed to load ${label} from ${url}.`);
+				return null;
+			}
+			return (await response.json()) as T;
+		} catch (error) {
+			console.warn(`⚠️ Failed to parse ${label} from ${url}.`, error);
+			return null;
+		}
+	};
+
+	const [gridSpec, chartSpecs, tableSpecs] = await Promise.all([
+		fetchJson<AnalyticsGridSpec>(gridSpecPath, 'grid spec'),
+		fetchJson<ChartSpec[]>('/chart-specs.json', 'chart specs'),
+		fetchJson<TableSpec[]>('/table-specs.json', 'table specs'),
 	]);
 
-	const gridSpec = gridResponse.ok
-		? ((await gridResponse.json()) as AnalyticsGridSpec)
-		: null;
-	const chartSpecs = chartResponse.ok ? ((await chartResponse.json()) as ChartSpec[]) : [];
-	const tableSpecs = tableResponse.ok ? ((await tableResponse.json()) as TableSpec[]) : [];
-
-	if (!gridResponse.ok) {
-		console.warn(`⚠️ Failed to load grid spec from ${gridSpecPath}.`);
-	}
-	if (!chartResponse.ok) {
-		console.warn('⚠️ Failed to load chart specs.');
-	}
-	if (!tableResponse.ok) {
-		console.warn('⚠️ Failed to load table specs.');
-	}
-
 	gridEl.setLayout?.(gridSpec);
-	gridEl.setContent?.({ charts: chartSpecs, tables: tableSpecs });
+	gridEl.setContent?.({ charts: chartSpecs ?? [], tables: tableSpecs ?? [] });
 });

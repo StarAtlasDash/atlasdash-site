@@ -42,9 +42,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 			continue;
 		}
 
-		const data = (await getQueryData(spec.query)) as Parameters<typeof buildChartRenderPlan>[1];
-		const plan = buildChartRenderPlan(spec, data);
-		applyChartRenderPlan(chartEl as HTMLElement & { setOption?: (opt: unknown) => void }, plan);
+		try {
+			const data = (await getQueryData(spec.query)) as Parameters<typeof buildChartRenderPlan>[1];
+			const plan = buildChartRenderPlan(spec, data);
+			applyChartRenderPlan(chartEl as HTMLElement & { setOption?: (opt: unknown) => void }, plan);
+		} catch (error) {
+			console.warn(`⚠️ Failed to render chart "${chartId}".`, error);
+		}
 	}
 
 	for (const tableEl of tables) {
@@ -58,9 +62,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 			console.warn(`⚠️ No table spec found for ${tableId}.`);
 			continue;
 		}
-		const data = (await getQueryData(spec.query)) as Parameters<typeof buildTableRenderPlan>[1];
-		const plan = buildTableRenderPlan(spec, data);
-		applyTableRenderPlan(tableEl as HTMLElement & { setTableData?: (plan: unknown) => void }, plan);
+		try {
+			const data = (await getQueryData(spec.query)) as Parameters<typeof buildTableRenderPlan>[1];
+			const plan = buildTableRenderPlan(spec, data);
+			applyTableRenderPlan(tableEl as HTMLElement & { setTableData?: (plan: unknown) => void }, plan);
+		} catch (error) {
+			console.warn(`⚠️ Failed to render table "${tableId}".`, error);
+		}
 	}
 
 });
