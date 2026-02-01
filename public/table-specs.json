@@ -16,5 +16,25 @@
       { "field": "AVG_PRICE", "label": "Average Price" }
     ],
     "enableColumnReorder": true
+  },
+  {
+    "id": "atlas-locker-leaderboard",
+    "title": "ATLAS locker leaderboard",
+    "label": "Tokenomics",
+    "description": "Amount of ATLAS locked per wallet",
+    "query": {
+      "source": "flipside",
+      "dataset": "atlas-locker-leaderboard"
+    }
+  },
+  {
+    "id": "polis-locker-leaderboard",
+    "title": "POLIS locker leaderboard",
+    "label": "Tokenomics",
+    "description": "Amount of POLIS locked per wallet",
+    "query": {
+      "source": "flipside",
+      "dataset": "polis-locker-leaderboard"
+    }
   }
 ]

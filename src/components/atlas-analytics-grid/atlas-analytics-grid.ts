@@ -37,6 +37,7 @@ type NormalizedItem = {
 type ResolvedRow = {
 	items: NormalizedItem[];
 	minHeight: number;
+	columns: number;
 };
 
 @customElement('atlas-analytics-grid')
@@ -57,6 +58,7 @@ export class AtlasAnalyticsGrid extends BaseComponentElement {
 	private layoutError: string | null = null;
 	private currentColumns = 1;
 	private renderHandle: number | null = null;
+	private resizeDebounceHandle: number | null = null;
 	private renderToken = 0;
 	private contentCharts: ChartSpec[] = [];
 	private contentTables: TableSpec[] = [];
@@ -147,10 +149,20 @@ export class AtlasAnalyticsGrid extends BaseComponentElement {
 			cancelAnimationFrame(this.renderHandle);
 			this.renderHandle = null;
 		}
+		if (this.resizeDebounceHandle !== null) {
+			window.clearTimeout(this.resizeDebounceHandle);
+			this.resizeDebounceHandle = null;
+		}
 	}
 
 	private handleResize = () => {
-		this.queueLayoutUpdate();
+		if (this.resizeDebounceHandle !== null) {
+			window.clearTimeout(this.resizeDebounceHandle);
+		}
+		this.resizeDebounceHandle = window.setTimeout(() => {
+			this.resizeDebounceHandle = null;
+			this.queueLayoutUpdate();
+		}, 150);
 	};
 
 	private queueLayoutUpdate() {
@@ -276,16 +288,18 @@ export class AtlasAnalyticsGrid extends BaseComponentElement {
 			return items.map((item) => ({
 				items: [{ ...item, span: 1 }],
 				minHeight: item.minHeight,
+				columns: 1,
 			}));
 		}
 
 		const totalSpan = items.reduce((sum, item) => sum + item.span, 0);
 		if (totalSpan <= columns) {
-			const adjusted = this.distributeExtraSpans(items, columns);
+			const { items: adjusted, columns: rowColumns } = this.distributeExtraSpans(items, columns);
 			return [
 				{
 					items: adjusted,
 					minHeight: this.getRowMinHeight(adjusted),
+					columns: rowColumns,
 				},
 			];
 		}
@@ -304,6 +318,7 @@ export class AtlasAnalyticsGrid extends BaseComponentElement {
 		resolved.push({
 			items: [{ ...target, span: columns }],
 			minHeight: target.minHeight,
+			columns,
 		});
 		if (after.length) {
 			resolved.push(...this.resolveRow(after, columns));
@@ -312,25 +327,28 @@ export class AtlasAnalyticsGrid extends BaseComponentElement {
 		return resolved;
 	}
 
-	private distributeExtraSpans(items: NormalizedItem[], columns: number): NormalizedItem[] {
+	private distributeExtraSpans(
+		items: NormalizedItem[],
+		columns: number
+	): { items: NormalizedItem[]; columns: number } {
 		const adjusted = items.map((item) => ({ ...item }));
 
 		if (adjusted.length === 1) {
 			adjusted[0].span = columns;
-			return adjusted;
+			return { items: adjusted, columns };
 		}
 
 		const totalSpan = adjusted.reduce((sum, item) => sum + item.span, 0);
-		let extra = columns - totalSpan;
-		let index = 0;
-
-		while (extra > 0 && adjusted.length > 0) {
-			adjusted[index].span += 1;
-			extra -= 1;
-			index = (index + 1) % adjusted.length;
+		const extra = columns - totalSpan;
+		if (extra > 0 && extra % adjusted.length === 0) {
+			const add = Math.floor(extra / adjusted.length);
+			adjusted.forEach((item) => {
+				item.span += add;
+			});
+			return { items: adjusted, columns };
 		}
 
-		return adjusted;
+		return { items: adjusted, columns: totalSpan };
 	}
 
 	private getRowMinHeight(items: NormalizedItem[]): number {
@@ -349,6 +367,7 @@ export class AtlasAnalyticsGrid extends BaseComponentElement {
 		rows.forEach((row) => {
 			const rowEl = this.createRowElement();
 			rowEl.style.minHeight = `${row.minHeight}px`;
+			rowEl.style.setProperty('--row-columns', `${Math.max(1, row.columns)}`);
 			this.gridEl!.appendChild(rowEl);
 			newRows.push(rowEl);
 

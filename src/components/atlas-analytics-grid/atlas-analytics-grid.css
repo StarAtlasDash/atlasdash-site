@@ -14,7 +14,7 @@
 
 .grid-row {
 	display: grid;
-	grid-template-columns: repeat(var(--grid-columns), minmax(var(--min-column-width), 1fr));
+	grid-template-columns: repeat(var(--row-columns, var(--grid-columns)), minmax(var(--min-column-width), 1fr));
 	gap: var(--grid-gap);
 	align-items: stretch;
 	max-height: var(--max-row-height);

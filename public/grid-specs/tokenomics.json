@@ -4,8 +4,8 @@
       { "id": "atlas-emissions", "span": 2, "minHeight": 480 }
     ],
     [
-      { "id": "token-supply", "span": 1, "minHeight": 300 },
-      { "id": "staking-flows", "span": 1, "minHeight": 300 }
+      { "id": "atlas-locker-leaderboard", "span": 1, "minHeight": 480 },
+      { "id": "polis-locker-leaderboard", "span": 1, "minHeight": 480 }
     ]
   ]
 }
