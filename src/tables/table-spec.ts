@@ -125,7 +125,7 @@ function buildTableDataPlan(spec: TableSpec, data: QueryResponseData): TableData
 	const stickyFirstColumn = spec.stickyFirstColumn !== false;
 
 	const columnVisibility: VisibilityState = {};
-const columns: ColumnDef<QueryRow, unknown>[] = [];
+	const columns: ColumnDef<QueryRow, unknown>[] = [];
 
 	(spec.columns ?? []).forEach((col) => {
 		if (!columnNames.has(col.field)) {
@@ -242,17 +242,43 @@ function numberRangeFilter(
 		return true;
 	}
 	const [min, max] = value;
-	const numeric = Number(row.getValue(columnId));
-	if (!Number.isFinite(numeric)) {
+	const numeric = parseNumeric(row.getValue(columnId));
+	if (numeric == null) {
 		return false;
 	}
-	if (min != null && min !== '' && Number.isFinite(Number(min)) && numeric < Number(min)) {
+	const minValue = parseNumeric(min);
+	const maxValue = parseNumeric(max);
+	if (minValue != null && numeric < minValue) {
 		return false;
 	}
-	if (max != null && max !== '' && Number.isFinite(Number(max)) && numeric > Number(max)) {
+	if (maxValue != null && numeric > maxValue) {
 		return false;
 	}
 	return true;
+}
+
+function parseNumeric(value: unknown): number | null {
+	if (value == null) {
+		return null;
+	}
+	if (typeof value === 'number') {
+		return Number.isFinite(value) ? value : null;
+	}
+	const raw = String(value).trim();
+	if (!raw) {
+		return null;
+	}
+	const cleaned = raw.replace(/,/g, '');
+	const direct = Number(cleaned);
+	if (Number.isFinite(direct)) {
+		return direct;
+	}
+	const match = cleaned.match(/-?\d+(\.\d+)?/);
+	if (match) {
+		const parsed = Number(match[0]);
+		return Number.isFinite(parsed) ? parsed : null;
+	}
+	return null;
 }
 
 function upsertSlot(element: HTMLElement, slotName: string, html?: string) {

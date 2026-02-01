@@ -18,6 +18,7 @@ import {
 	type ColumnDef,
 	type ColumnFiltersState,
 	type ColumnOrderState,
+	type Row,
 	type SortingState,
 	type TableState as TanstackTableState,
 	type Updater,
@@ -95,6 +96,9 @@ export class AtlasTable extends BaseComponentElement {
 	@bindTemplateElement('.table-body')
 	private tableBodyEl: HTMLTableSectionElement | null = null;
 
+	@bindTemplateElement('.table-scroll')
+	private tableScrollEl: HTMLDivElement | null = null;
+
 	@bindTemplateElement('.loading-overlay')
 	private loadingOverlayEl: HTMLDivElement | null = null;
 
@@ -103,6 +107,14 @@ export class AtlasTable extends BaseComponentElement {
 	private tableState: TanstackTableState = { ...DEFAULT_TABLE_STATE };
 	private loading = true;
 	private dragColumnId: string | null = null;
+	private virtualRowHeight = 0;
+	private virtualStart = 0;
+	private virtualEnd = 0;
+	private lastVirtualStart = -1;
+	private lastVirtualEnd = -1;
+	private scrollHandle: number | null = null;
+	private readonly virtualOverscan = 8;
+	private readonly virtualRowThreshold = 150;
 
 	constructor() {
 		super(template, style);
@@ -149,9 +161,15 @@ export class AtlasTable extends BaseComponentElement {
 		this.renderColumnTogglePanel();
 		this.renderTable();
 		this.updateColumnToggleVisibility();
+		this.tableScrollEl?.addEventListener('scroll', this.onTableScroll, { passive: true });
 	}
 
 	protected onDisconnected(): void {
+		this.tableScrollEl?.removeEventListener('scroll', this.onTableScroll);
+		if (this.scrollHandle !== null) {
+			cancelAnimationFrame(this.scrollHandle);
+			this.scrollHandle = null;
+		}
 	}
 
 	protected onSlotChange = () => {
@@ -201,6 +219,9 @@ export class AtlasTable extends BaseComponentElement {
 			...options,
 			state: this.tableState,
 		}));
+		if (key === 'columnFilters' && this.tableScrollEl) {
+			this.tableScrollEl.scrollTop = 0;
+		}
 		this.renderTable();
 		this.renderColumnTogglePanel();
 	}
@@ -209,12 +230,15 @@ export class AtlasTable extends BaseComponentElement {
 		if (!this.table || !this.tableHeadEl || !this.tableBodyEl || !this.tablePlan) {
 			return;
 		}
+		this.virtualRowHeight = 0;
 		const tableHeadEl = this.tableHeadEl;
 		const tableBodyEl = this.tableBodyEl;
 		const tablePlan = this.tablePlan;
 		const focusState = this.captureFilterFocus();
 		tableHeadEl.innerHTML = '';
 		tableBodyEl.innerHTML = '';
+		this.lastVirtualStart = -1;
+		this.lastVirtualEnd = -1;
 
 		const headerGroups = this.table.getHeaderGroups();
 		const stickyId = this.getStickyColumnId();
@@ -315,7 +339,15 @@ export class AtlasTable extends BaseComponentElement {
 						const current = (column.getFilterValue() as [string, string] | undefined) ?? [];
 						minInput.value = current[0] ?? '';
 						maxInput.value = current[1] ?? '';
-						const updateRange = () => column.setFilterValue([minInput.value, maxInput.value]);
+						const updateRange = () => {
+							const min = minInput.value.trim();
+							const max = maxInput.value.trim();
+							if (!min && !max) {
+								column.setFilterValue(undefined);
+								return;
+							}
+							column.setFilterValue([min, max]);
+						};
 						minInput.addEventListener('input', updateRange);
 						maxInput.addEventListener('input', updateRange);
 						wrapper.append(minInput, maxInput);
@@ -350,29 +382,7 @@ export class AtlasTable extends BaseComponentElement {
 			this.style.setProperty('--table-head-row-height', `${Math.ceil(headerHeight)}px`);
 		}
 
-		const rows = this.table.getRowModel().rows;
-		rows.forEach((row) => {
-			const rowEl = document.createElement('tr');
-			row.getVisibleCells().forEach((cell) => {
-				const isRowHeader = !!(stickyId && cell.column.id === stickyId);
-				const cellEl = document.createElement(isRowHeader ? 'th' : 'td');
-				const meta = cell.column.columnDef.meta as { dataType?: string } | undefined;
-				if (isRowHeader) {
-					cellEl.setAttribute('scope', 'row');
-					cellEl.classList.add('row-header');
-				}
-				if (meta?.dataType === 'number') {
-					cellEl.classList.add('is-numeric');
-				}
-				const content = cell.column.columnDef.cell ?? cell.getValue();
-				this.applyCellContent(cellEl, content, cell.getContext());
-				if (isRowHeader) {
-					cellEl.classList.add('sticky-col');
-				}
-				rowEl.appendChild(cellEl);
-			});
-			tableBodyEl.appendChild(rowEl);
-		});
+		this.renderTableBody(this.table.getRowModel().rows, stickyId);
 
 		this.restoreFilterFocus(focusState);
 	}
@@ -410,6 +420,171 @@ export class AtlasTable extends BaseComponentElement {
 		}
 		const showToggle = !!this.tablePlan?.enableColumnVisibilityToggles;
 		this.columnToggleWrap.toggleAttribute('hidden', !showToggle);
+	}
+
+	private onTableScroll = () => {
+		if (this.scrollHandle !== null) {
+			cancelAnimationFrame(this.scrollHandle);
+		}
+		this.scrollHandle = requestAnimationFrame(() => {
+			this.scrollHandle = null;
+			this.renderTableBodyOnly();
+		});
+	};
+
+	private renderTableBodyOnly() {
+		if (!this.table || !this.tableBodyEl || !this.tablePlan) {
+			return;
+		}
+		this.renderTableBody(this.table.getRowModel().rows, this.getStickyColumnId());
+	}
+
+	private renderTableBody(rows: Row<QueryRow>[], stickyId: string | null) {
+		if (!this.tableBodyEl || !this.table) {
+			return;
+		}
+		const tableBodyEl = this.tableBodyEl;
+		const visibleColumns = this.table.getVisibleLeafColumns();
+		const totalRows = rows.length;
+		const shouldVirtualize = totalRows > this.virtualRowThreshold && !!this.tableScrollEl;
+		if (!totalRows) {
+			tableBodyEl.innerHTML = '';
+			this.lastVirtualStart = -1;
+			this.lastVirtualEnd = -1;
+			return;
+		}
+		if (shouldVirtualize) {
+			this.updateVirtualWindow(totalRows);
+			const start = this.virtualStart;
+			const end = this.virtualEnd;
+			if (start === this.lastVirtualStart && end === this.lastVirtualEnd) {
+				return;
+			}
+			this.lastVirtualStart = start;
+			this.lastVirtualEnd = end;
+			const slice = rows.slice(start, end);
+			const padTop = this.virtualRowHeight * start;
+			const padBottom = this.virtualRowHeight * Math.max(0, totalRows - end);
+			tableBodyEl.innerHTML = '';
+			if (padTop > 0) {
+				tableBodyEl.appendChild(this.createSpacerRow(visibleColumns.length, padTop));
+			}
+			slice.forEach((row) => {
+				const rowEl = document.createElement('tr');
+				row.getVisibleCells().forEach((cell) => {
+					const isRowHeader = !!(stickyId && cell.column.id === stickyId);
+					const cellEl = document.createElement(isRowHeader ? 'th' : 'td');
+					const meta = cell.column.columnDef.meta as { dataType?: string } | undefined;
+					if (isRowHeader) {
+						cellEl.setAttribute('scope', 'row');
+						cellEl.classList.add('row-header');
+					}
+					if (meta?.dataType === 'number') {
+						cellEl.classList.add('is-numeric');
+					}
+					const content = cell.column.columnDef.cell ?? cell.getValue();
+					this.applyCellContent(cellEl, content, cell.getContext());
+					if (isRowHeader) {
+						cellEl.classList.add('sticky-col');
+					}
+					rowEl.appendChild(cellEl);
+				});
+				tableBodyEl.appendChild(rowEl);
+			});
+			if (padBottom > 0) {
+				tableBodyEl.appendChild(this.createSpacerRow(visibleColumns.length, padBottom));
+			}
+			if (!this.virtualRowHeight || this.virtualRowHeight === 40) {
+				const measured = this.estimateRowHeight();
+				if (measured > 0) {
+					this.virtualRowHeight = measured;
+				}
+			}
+			return;
+		}
+
+		tableBodyEl.innerHTML = '';
+		this.lastVirtualStart = -1;
+		this.lastVirtualEnd = -1;
+		rows.forEach((row) => {
+			const rowEl = document.createElement('tr');
+			row.getVisibleCells().forEach((cell) => {
+				const isRowHeader = !!(stickyId && cell.column.id === stickyId);
+				const cellEl = document.createElement(isRowHeader ? 'th' : 'td');
+				const meta = cell.column.columnDef.meta as { dataType?: string } | undefined;
+				if (isRowHeader) {
+					cellEl.setAttribute('scope', 'row');
+					cellEl.classList.add('row-header');
+				}
+				if (meta?.dataType === 'number') {
+					cellEl.classList.add('is-numeric');
+				}
+				const content = cell.column.columnDef.cell ?? cell.getValue();
+				this.applyCellContent(cellEl, content, cell.getContext());
+				if (isRowHeader) {
+					cellEl.classList.add('sticky-col');
+				}
+				rowEl.appendChild(cellEl);
+			});
+			tableBodyEl.appendChild(rowEl);
+		});
+		if (!this.virtualRowHeight || this.virtualRowHeight === 40) {
+			const measured = this.estimateRowHeight();
+			if (measured > 0) {
+				this.virtualRowHeight = measured;
+			}
+		}
+	}
+
+	private updateVirtualWindow(totalRows: number) {
+		if (!this.tableScrollEl) {
+			this.virtualStart = 0;
+			this.virtualEnd = totalRows;
+			return;
+		}
+		if (totalRows === 0) {
+			this.virtualStart = 0;
+			this.virtualEnd = 0;
+			return;
+		}
+		if (!this.virtualRowHeight) {
+			this.virtualRowHeight = this.estimateRowHeight();
+		}
+		const rowHeight = this.virtualRowHeight || 40;
+		const viewport = this.tableScrollEl.clientHeight;
+		const scrollTop = this.tableScrollEl.scrollTop;
+		const rowsPerView = Math.ceil(viewport / rowHeight);
+		const rawStart = Math.floor(scrollTop / rowHeight) - this.virtualOverscan;
+		const start = Math.max(0, Math.min(rawStart, Math.max(0, totalRows - 1)));
+		const end = Math.min(totalRows, start + rowsPerView + this.virtualOverscan * 2);
+		this.virtualStart = start;
+		this.virtualEnd = end;
+	}
+
+	private estimateRowHeight() {
+		const row = this.tableBodyEl?.querySelector('tr:not(.spacer-row)');
+		if (row) {
+			const rect = row.getBoundingClientRect();
+			if (rect.height > 0) {
+				return rect.height;
+			}
+		}
+		return 40;
+	}
+
+	private createSpacerRow(colSpan: number, height: number) {
+		const row = document.createElement('tr');
+		row.className = 'spacer-row';
+		const cell = document.createElement('td');
+		cell.colSpan = Math.max(1, colSpan);
+		cell.style.padding = '0';
+		cell.style.border = 'none';
+		const spacer = document.createElement('div');
+		spacer.style.height = `${height}px`;
+		spacer.style.width = '1px';
+		cell.appendChild(spacer);
+		row.appendChild(cell);
+		return row;
 	}
 
 	private updateDescription() {
