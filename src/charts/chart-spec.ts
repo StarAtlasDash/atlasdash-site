@@ -267,6 +267,7 @@ export function buildChartOption(spec: ChartSpec, data: QueryResponseData): echa
 	const shadowConfig = buildShadowSeries(effectiveSpec, normalizedSeries, rows, xValues, useTimeAxis, columnTypes);
 	const seriesForOption = shadowConfig?.series ?? normalizedSeries;
 
+	const axisDecimals = deriveAxisDecimals(seriesForOption, allowSecondaryAxis);
 	const option: echarts.EChartsOption = {
 		xAxis: {
 			type: useTimeAxis ? 'time' : 'category',
@@ -282,7 +283,7 @@ export function buildChartOption(spec: ChartSpec, data: QueryResponseData): echa
 				},
 			},
 		},
-		yAxis: buildYAxis(spec, normalizedSeries, allowSecondaryAxis),
+		yAxis: buildYAxis(spec, normalizedSeries, allowSecondaryAxis, axisDecimals),
 		series: seriesForOption,
 		tooltip: {
 			trigger: 'axis',
@@ -671,9 +672,11 @@ function buildSeriesFromColumns(
 function buildYAxis(
 	spec: ChartSpec,
 	series: echarts.SeriesOption[],
-	allowSecondaryAxis: boolean
+	allowSecondaryAxis: boolean,
+	axisDecimals: Map<number, number>
 ): echarts.EChartsOption['yAxis'] {
 	const primary = spec.yAxis ?? spec.yAxes?.[0] ?? {};
+	const primaryDecimals = axisDecimals.get(0) ?? 0;
 	if (!allowSecondaryAxis) {
 		return {
 			type: 'value' as const,
@@ -684,12 +687,16 @@ function buildYAxis(
 			nameLocation: primary.label ? ('middle' as const) : undefined,
 			nameRotate: primary.label ? 90 : undefined,
 			nameMoveOverlap: true,
-			axisLabel: { margin: 8 },
+			axisLabel: {
+				margin: 8,
+				formatter: (value: unknown) => formatAxisTick(value, primaryDecimals),
+			},
 		};
 	}
 
 	if (spec.yAxes && spec.yAxes.length) {
 		const axes = spec.yAxes.map((axis, index) => {
+			const decimals = axisDecimals.get(index) ?? 0;
 			return ({
 				type: 'value' as const,
 				name: axis.label,
@@ -700,7 +707,10 @@ function buildYAxis(
 				nameLocation: axis.label ? ('middle' as const) : undefined,
 				nameRotate: axis.label ? (index === 1 ? -90 : 90) : undefined,
 				nameMoveOverlap: true,
-				axisLabel: { margin: 8 },
+				axisLabel: {
+					margin: 8,
+					formatter: (value: unknown) => formatAxisTick(value, decimals),
+				},
 				splitLine: index === 0 ? { show: true } : { show: false },
 			});
 		});
@@ -724,7 +734,10 @@ function buildYAxis(
 				nameLocation: primary.label ? ('middle' as const) : undefined,
 				nameRotate: primary.label ? 90 : undefined,
 				nameMoveOverlap: true,
-				axisLabel: { margin: 8 },
+				axisLabel: {
+					margin: 8,
+					formatter: (value: unknown) => formatAxisTick(value, primaryDecimals),
+				},
 				splitLine: { show: true },
 			},
 			{
@@ -734,7 +747,10 @@ function buildYAxis(
 				nameLocation: 'middle' as const,
 				nameRotate: -90,
 				nameMoveOverlap: true,
-				axisLabel: { margin: 8 },
+				axisLabel: {
+					margin: 8,
+					formatter: (value: unknown) => formatAxisTick(value, axisDecimals.get(1) ?? primaryDecimals),
+				},
 				splitLine: { show: false },
 			},
 		];
@@ -747,6 +763,10 @@ function buildYAxis(
 		max: primary.max,
 		position: primary.position,
 		nameMoveOverlap: true,
+		axisLabel: {
+			margin: 8,
+			formatter: (value: unknown) => formatAxisTick(value, primaryDecimals),
+		},
 	};
 }
 
@@ -932,6 +952,77 @@ function roundNumericValue(value: QueryValue, decimals: number) {
 	}
 	const factor = Math.pow(10, decimals);
 	return Math.round(numeric * factor) / factor;
+}
+
+function formatAxisTick(value: unknown, decimals: number) {
+	const numeric = typeof value === 'number' ? value : Number(value);
+	if (!Number.isFinite(numeric)) {
+		return String(value ?? '');
+	}
+	const abs = Math.abs(numeric);
+	if (abs > 0 && abs < 1e-6) {
+		return '0';
+	}
+	const clamped = Math.max(0, Math.min(8, decimals));
+	return new Intl.NumberFormat('en-US', {
+		minimumFractionDigits: clamped,
+		maximumFractionDigits: clamped,
+	}).format(numeric);
+}
+
+function deriveAxisDecimals(series: echarts.SeriesOption[], allowSecondaryAxis: boolean) {
+	const decimalsByAxis = new Map<number, number>();
+	const maxAxis = allowSecondaryAxis
+		? series.reduce((max, item) => Math.max(max, (item as { yAxisIndex?: number }).yAxisIndex ?? 0), 0)
+		: 0;
+	for (let axisIndex = 0; axisIndex <= maxAxis; axisIndex += 1) {
+		const values = collectAxisValues(series, axisIndex);
+		decimalsByAxis.set(axisIndex, computeSampleDecimals(values));
+	}
+	return decimalsByAxis;
+}
+
+function collectAxisValues(series: echarts.SeriesOption[], axisIndex: number): number[] {
+	const values: number[] = [];
+	series.forEach((item) => {
+		const record = item as { data?: unknown; yAxisIndex?: number };
+		const itemAxis = record.yAxisIndex ?? 0;
+		if (itemAxis !== axisIndex || !Array.isArray(record.data)) {
+			return;
+		}
+		record.data.forEach((point) => {
+			const value = extractNumericValue(point);
+			if (value == null) {
+				return;
+			}
+			values.push(value);
+		});
+	});
+	return values;
+}
+
+function computeSampleDecimals(values: number[]) {
+	if (!values.length) {
+		return 0;
+	}
+	const first = values[0];
+	const middle = values[Math.floor(values.length / 2)];
+	const last = values[values.length - 1];
+	return Math.max(countDecimals(first), countDecimals(middle), countDecimals(last));
+}
+
+function countDecimals(value: number) {
+	if (!Number.isFinite(value)) {
+		return 0;
+	}
+	const rounded = Math.round(value);
+	const magnitude = Math.max(1, Math.abs(value));
+	if (Math.abs(value - rounded) < 1e-6 * magnitude) {
+		return 0;
+	}
+	const fixed = value.toFixed(12).replace(/\.?0+$/, '');
+	const parts = fixed.split('.');
+	return parts.length > 1 ? parts[1].length : 0;
 }
 
 function computeAxisMax(series: echarts.SeriesOption[]): Map<number, number> {
