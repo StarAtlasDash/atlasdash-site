@@ -21,7 +21,8 @@
     "id": "atlas-locker-leaderboard",
     "title": "ATLAS locker leaderboard",
     "label": "Tokenomics",
-    "description": "Amount of ATLAS locked per wallet",
+    "description": "ATLAS Locker Leaderboard ranks wallets by net ATLAS currently locked in the ATLAS Locker, based on cumulative deposits minus withdrawals.",
+    "infoMd": "Token locking reflects long-term conviction rather than short-term activity. This leaderboard ranks wallets by the amount of ATLAS currently locked in the ATLAS Locker, aggregating net deposits and withdrawals over time to show who has committed the most capital to locking.\n\nBy focusing on locked balances instead of transfers or trading volume, the chart highlights structural commitment to the ecosystem—separating wallets that actively stake or lock ATLAS from those that primarily hold or trade liquid balances.",
     "query": {
       "source": "flipside",
       "dataset": "atlas-locker-leaderboard"
@@ -31,7 +32,8 @@
     "id": "polis-locker-leaderboard",
     "title": "POLIS locker leaderboard",
     "label": "Tokenomics",
-    "description": "Amount of POLIS locked per wallet",
+    "description": "POLIS Locker Leaderboard ranks wallets by net POLIS currently locked in the POLIS Locker, based on cumulative locking activity.",
+    "infoMd": "Locking POLIS represents long-term governance alignment rather than short-term market activity. This leaderboard ranks wallets by the amount of POLIS currently locked in the POLIS Locker, accounting for net deposits and withdrawals over time.\n\nBy focusing on locked POLIS balances, the table highlights which participants have committed governance capital to the Star Atlas ecosystem, providing a clear view of where long-term voting power and strategic alignment are concentrated.",
     "query": {
       "source": "flipside",
       "dataset": "polis-locker-leaderboard"

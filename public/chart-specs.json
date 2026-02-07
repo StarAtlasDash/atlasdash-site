@@ -94,7 +94,8 @@
         { "field": "CARGO_FLEETS_AVG", "name": "Cargo", "type": "area", "stack": "total" }
       ]
     },
-    "description": "SAGE Fleets assigned to the various gameplay loops (scanning, mining, cargo) per day"
+    "description": "Active Fleets by Role show 7-day average active fleets in scanning, mining, and cargo, stacked to illustrate total fleet utilization and role distribution over time.",
+    "infoMd": "Fleets are the operational backbone of SAGE, and how they are deployed reveals how players allocate capacity across the economy. This stacked area chart shows active fleets over time, split between scanning, mining, and cargo operations, using a 7-day rolling average to smooth daily variation.\n\nBy viewing fleet activity as a composition rather than a single total, the chart highlights shifts in operational focus—whether fleets are being committed to collecting SDUs, resource extraction, or logistics—and helps identify periods where capacity is constrained, idle, or reallocated between roles."
   },
   {
     "id": "sb-raw-materials-trading-volume-gm",
@@ -132,7 +133,8 @@
       "type": "bar",
       "stack": "total"
     },
-    "description": "Trading volume in ATLAS for raw materials at the Galactic Marketplace"
+    "description": "Daily Resource Trading Volume (ATLAS) shows ATLAS-denominated marketplace volume per day, stacked by resource to illustrate both total activity and composition.",
+    "infoMd": "Resource flows are the backbone of the Star Atlas economy. This stacked bar chart shows the daily ATLAS-denominated trading volume of key resources, broken down by resource type, revealing how total economic activity is distributed across materials over time.\n\nBy stacking individual resources into a single daily total, the chart makes shifts in demand visible: which materials dominate trading on a given day, how the mix changes during production surges or bottlenecks, and whether growth in total volume is broad-based or driven by a small number of resources."
   },
   {
     "id": "sb-dau-gameloops",
@@ -165,7 +167,8 @@
         { "field": "DAU_UPGRADING_AVG", "name": "Upgrading", "type": "area", "stack": "total" }
       ]
     },
-    "description": "This data set shows the weekly average of active player profiles in the four current gameloops"
+    "description": "Active Players by Game Loop show 7-day average daily active player profiles in scanning, mining, crafting, and upgrading, stacked to illustrate both total engagement and its composition over time.",
+    "infoMd": "Player activity in SAGE is not monolithic — it flows through distinct gameplay loops that serve different economic roles. This stacked area chart shows how daily active player profiles are distributed across scanning, mining, crafting, and upgrading, using a 7-day rolling average to smooth short-term fluctuations.\n\nBy layering these loops over time, the chart reveals how player focus shifts between exploration, extraction, production, and progression, making it easier to see whether engagement is broad-based or concentrated in specific parts of the gameplay pipeline."
   },
   {
     "id": "atlas-emissions",
@@ -208,6 +211,7 @@
     "series": [
       { "name": "Total: 3-month Average", "field": "ATLAS_3M_AVG", "type": "line" }
     ],
-    "description": "ATLAS Emissions through Faction Fleet (SCORE) and SAGE Starbased. In Starbased players claim ATLAS for accumulated Loyalty Points and sell Faction Infrastructure Contracts (FICSs) to NPC bidders."
+    "description": "Daily ATLAS Emissions by Source show ATLAS issued per day from Faction Fleet, Starbased LP redemption, and Faction Infrastructure Contracts, stacked to display both total emissions and source mix.",
+    "infoMd": "ATLAS enters the economy through several distinct systems, each tied to different forms of player activity. This stacked bar chart shows daily ATLAS emissions split between Faction Fleet rewards, Starbased LP redemptions, and Faction Infrastructure Contracts.\n\nBy separating emission sources, the chart clarifies which systems are currently driving token issuance and how their relative contributions change over time. This makes it easier to assess whether emissions are dominated by operational gameplay, progression mechanics, or infrastructure incentives, rather than viewing total issuance as a single opaque number."
   }
 ]
