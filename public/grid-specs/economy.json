@@ -1,7 +1,37 @@
 {
   "rows": [
-		[{ "id": "sb-raw-materials-trading-volume-gm", "span": 2, "minHeight": 480 }],
-		[{ "id": "sb-dau-gameloops", "span": 2, "minHeight": 480 }],
-		[{ "id": "fleet-activity-sage", "span": 2, "minHeight": 480 }]
+    {
+      "label": "Faction",
+      "target": ["sb-faction-action-valuation", "sb-faction-action-valuation-table"],
+      "selected": "MUD",
+      "filters": [
+        { "field": "FACTION", "value": "MUD", "name": "MUD", "icon": "/faction-icons/MUD.png" },
+        { "field": "FACTION", "value": "ONI", "name": "ONI", "icon": "/faction-icons/ONI.png" },
+        { "field": "FACTION", "value": "UST", "name": "Ustur", "icon": "/faction-icons/Ustur.png" }
+      ]
+    },
+    [
+      {
+        "id": "sb-faction-action-valuation",
+        "span": 1,
+        "minHeight": 480,
+        "excludeFilters": [
+          { "field": "NAME", "value": "TOTAL" },
+          { "field": "NAME", "value": "" },
+          { "field": "NAME", "value": "INK" }
+        ]
+      },
+      {
+        "id": "sb-faction-action-valuation-table",
+        "span": 1,
+        "minHeight": 480,
+        "excludeFilters": [
+          { "field": "NAME", "value": "" }
+        ]
+      }
+    ],
+    [{ "id": "sb-raw-materials-trading-volume-gm", "span": 2, "minHeight": 480 }],
+    [{ "id": "sb-dau-gameloops", "span": 2, "minHeight": 480 }],
+    [{ "id": "fleet-activity-sage", "span": 2, "minHeight": 480 }]
   ]
 }

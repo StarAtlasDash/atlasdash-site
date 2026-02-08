@@ -20,12 +20,23 @@
 	max-height: var(--max-row-height);
 }
 
+.grid-row--filters {
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	align-items: center;
+}
+
 .grid-item {
 	box-sizing: border-box;
 	width: 100%;
 	align-self: stretch;
 	height: 100%;
 	max-height: var(--max-row-height);
+}
+
+.grid-item--filter {
+	max-height: none;
+	height: auto;
+	align-self: center;
 }
 
 .grid-item > atlas-chart,

@@ -9,8 +9,12 @@ import {
 import template from './atlas-chart.html?raw';
 import style from './atlas-chart.css?inline';
 import '../atlas-popup';
+import type { ChartSpec } from '../../charts/chart-spec';
+import { applyChartRenderPlan, buildChartRenderPlan } from '../../charts/chart-spec';
+import type { QueryResponseData } from '../../types/queried_data';
+import type { Filter } from '../../types/filter';
 
-type ChartType = 'stacked-bar' | 'bar' | 'line' | 'area' | '';
+type ChartType = 'stacked-bar' | 'bar' | 'line' | 'area' | 'pie' | '';
 
 @customElement('atlas-chart')
 export class AtlasChart extends BaseComponentElement {
@@ -59,6 +63,9 @@ export class AtlasChart extends BaseComponentElement {
 	private resizeHandle: number | null = null;
 	private lastOptionState = { chartType: '', noLegend: false };
 	private loading = true;
+	private sourceSpec: ChartSpec | null = null;
+	private sourceData: QueryResponseData | null = null;
+	private filters: Filter[] = [];
 
 	constructor() {
 		super(template, style);
@@ -91,6 +98,21 @@ export class AtlasChart extends BaseComponentElement {
 		}
 	}
 
+	setSourceData(spec: ChartSpec, data: QueryResponseData) {
+		this.sourceSpec = spec;
+		this.sourceData = data;
+		this.applyFiltersAndRender();
+	}
+
+	set filter(value: Filter | Filter[] | null) {
+		this.filters = value ? (Array.isArray(value) ? value : [value]) : [];
+		this.applyFiltersAndRender();
+	}
+
+	get filter() {
+		return this.filters;
+	}
+
 	protected render(): void {
 		if (this.titleEl) {
 			this.titleEl.textContent = this.title || '';
@@ -101,6 +123,10 @@ export class AtlasChart extends BaseComponentElement {
 			this.labelEl.toggleAttribute('hidden', !this.label);
 		}
 
+		if (this.chartCanvas) {
+			this.chartCanvas.setAttribute('role', 'img');
+			this.chartCanvas.setAttribute('aria-label', this.title || 'Chart');
+		}
 		this.updateDescription();
 		this.updateLoadingState();
 		this.reapplyOptionIfNeeded();
@@ -151,6 +177,14 @@ export class AtlasChart extends BaseComponentElement {
 		if (this.chart) {
 			this.queueResize();
 		}
+	}
+
+	private applyFiltersAndRender() {
+		if (!this.sourceSpec || !this.sourceData) {
+			return;
+		}
+		const plan = buildChartRenderPlan(this.sourceSpec, this.sourceData, this.filters);
+		applyChartRenderPlan(this as HTMLElement & { setOption?: (opt: unknown) => void }, plan);
 	}
 
 	private applyOption(opts: echarts.SetOptionOpts = {}) {
@@ -417,7 +451,10 @@ export class AtlasChart extends BaseComponentElement {
 	private updateLoadingState() {
 		if (this.loadingOverlayEl) {
 			this.loadingOverlayEl.hidden = !this.loading;
+			this.loadingOverlayEl.setAttribute('role', 'status');
+			this.loadingOverlayEl.setAttribute('aria-live', 'polite');
 		}
+		this.setAttribute('aria-busy', this.loading ? 'true' : 'false');
 	}
 
 	private getThemeColors() {

@@ -1,0 +1,143 @@
+:host {
+	display: inline-block;
+	position: relative;
+	font-family: inherit;
+}
+
+.filter {
+	display: inline-block;
+	position: relative;
+}
+
+.filter-trigger {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.5rem 0.75rem;
+	border: 1px solid #d4d6da;
+	border-radius: 0.75rem;
+	background: #ffffff;
+	color: #111111;
+	cursor: pointer;
+	min-width: 10rem;
+	text-align: left;
+}
+
+.filter-selected-icon {
+	width: 1rem;
+	height: 1rem;
+	border-radius: 999px;
+	object-fit: cover;
+	margin-right: 0.35rem;
+	margin-top: 0.05rem;
+}
+
+.filter-value {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+}
+
+.filter-trigger:focus-visible {
+	outline: 2px solid #5a2bbf;
+	outline-offset: 2px;
+}
+
+.filter-text {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+}
+
+.filter-label {
+	font-size: 0.7rem;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: #6b6f76;
+}
+
+.filter-value {
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: #1b1b1b;
+}
+
+:host(:not(.has-selection)) .filter-label {
+	display: none;
+}
+
+:host(:not(.has-selection)) .filter-value {
+	font-weight: 500;
+}
+
+.filter-caret {
+	font-size: 0.8rem;
+	color: #5d6166;
+}
+
+.filter-floating {
+	position: absolute;
+	z-index: 40;
+}
+
+.filter-panel {
+	min-width: 12rem;
+	max-width: 20rem;
+	max-height: 18rem;
+	overflow: auto;
+	background: #ffffff;
+	border: 1px solid #d4d6da;
+	border-radius: 0.75rem;
+	box-shadow: 0 12px 24px rgba(16, 18, 20, 0.12);
+	padding: 0.4rem;
+}
+
+.filter-options {
+	display: grid;
+	gap: 0.2rem;
+}
+
+.filter-option {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.45rem 0.6rem;
+	border-radius: 0.5rem;
+	border: 1px solid transparent;
+	background: transparent;
+	cursor: pointer;
+	text-align: left;
+	font-size: 0.85rem;
+	color: #1b1b1b;
+}
+
+.filter-option[aria-selected="true"] {
+	background: rgba(90, 43, 191, 0.08);
+	border-color: rgba(90, 43, 191, 0.25);
+	color: #3a1d7f;
+}
+
+.filter-option:hover {
+	background: rgba(15, 23, 42, 0.06);
+}
+
+.filter-option:focus-visible {
+	outline: 2px solid #5a2bbf;
+	outline-offset: 1px;
+}
+
+.filter-option-icon {
+	width: 1rem;
+	height: 1rem;
+	flex: 0 0 1rem;
+	object-fit: contain;
+}
+
+.filter-option-label {
+	flex: 1;
+}
+
+::slotted(*) {
+	display: none;
+}

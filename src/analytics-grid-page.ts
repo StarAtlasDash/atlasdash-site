@@ -1,5 +1,6 @@
 import { registerAtlasAnalyticsGrid } from './components/atlas-analytics-grid';
 import { registerAtlasChart } from './components/atlas-chart';
+import { registerAtlasFilter } from './components/atlas-filter';
 import { registerAtlasTable } from './components/atlas-table';
 import type { AnalyticsGridSpec } from './components/atlas-analytics-grid/atlas-analytics-grid';
 import type { ChartSpec } from './charts/chart-spec';
@@ -7,6 +8,7 @@ import type { TableSpec } from './tables/table-spec';
 
 registerAtlasAnalyticsGrid();
 registerAtlasChart();
+registerAtlasFilter();
 registerAtlasTable();
 
 document.addEventListener('DOMContentLoaded', async () => {

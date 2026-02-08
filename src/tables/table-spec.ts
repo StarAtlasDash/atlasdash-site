@@ -8,6 +8,8 @@ import {
 import type { QueryResponseData } from '../types/queried_data';
 import type { QueryRow, R2QueryRef } from '../types/query';
 import { renderMarkdown } from '../utils/markdown';
+import type { Filter } from '../types/filter';
+import { applyExcludeFiltersToData, applyFiltersToData, normalizeFilters, resolveFilterOverrides } from '../utils/filters';
 
 export interface TableColumnSpec {
 	field: string;
@@ -26,7 +28,7 @@ export interface TableSpec {
 	infoMd?: string;
 	query: R2QueryRef;
 	columns?: TableColumnSpec[];
-	excludeColumns?: string[];
+	excludeFilters?: Filter[];
 	enableColumnFilters?: boolean;
 	enableColumnVisibilityToggles?: boolean;
 	enableColumnReorder?: boolean;
@@ -64,9 +66,19 @@ interface TableColumnMeta {
 	dataType: 'number' | 'text';
 }
 
-export function buildTableRenderPlan(spec: TableSpec, data: QueryResponseData): TableRenderPlan {
-	const descriptionContent = spec.descriptionMd ?? spec.description;
-	const infoContent = spec.infoMd;
+export function buildTableRenderPlan(
+	spec: TableSpec,
+	data: QueryResponseData,
+	filters?: Filter | Filter[] | null
+): TableRenderPlan {
+	const normalizedFilters = normalizeFilters(filters);
+	const filteredData = applyFiltersToData(
+		applyExcludeFiltersToData(data, spec.excludeFilters ?? []),
+		normalizedFilters
+	);
+	const overrides = resolveFilterOverrides(normalizedFilters);
+	const descriptionContent = overrides.description ?? spec.descriptionMd ?? spec.description;
+	const infoContent = overrides.info ?? spec.infoMd;
 	const descriptionHtml = descriptionContent ? renderMarkdown(descriptionContent) : undefined;
 	const infoHtml = infoContent ? renderMarkdown(infoContent) : undefined;
 
@@ -74,11 +86,11 @@ export function buildTableRenderPlan(spec: TableSpec, data: QueryResponseData): 
 		title: spec.title,
 		label: spec.label,
 	};
-	if (spec.description && !descriptionHtml) {
-		attrs.description = spec.description;
+	if (descriptionContent && !descriptionHtml) {
+		attrs.description = descriptionContent;
 	}
 
-	const table = buildTableDataPlan(spec, data);
+	const table = buildTableDataPlan(spec, filteredData);
 
 	return {
 		attrs,
@@ -89,8 +101,9 @@ export function buildTableRenderPlan(spec: TableSpec, data: QueryResponseData): 
 }
 
 export function applyTableRenderPlan(
-	element: HTMLElement & { setTableData?: (plan: TableDataPlan) => void },
-	plan: TableRenderPlan
+	element: HTMLElement & { setTableData?: (plan: TableDataPlan, options?: { preserveState?: boolean }) => void },
+	plan: TableRenderPlan,
+	options?: { preserveState?: boolean }
 ) {
 	element.setAttribute('title', plan.attrs.title);
 	if (plan.attrs.label) {
@@ -110,15 +123,13 @@ export function applyTableRenderPlan(
 	if (typeof element.setTableData !== 'function') {
 		throw new Error('Expected <atlas-table> element with setTableData().');
 	}
-	element.setTableData(plan.table);
+	element.setTableData(plan.table, options);
 }
 
 function buildTableDataPlan(spec: TableSpec, data: QueryResponseData): TableDataPlan {
 	const columnTypes = new Map(data.columns.map((col) => [col.name, col.type]));
 	const columnNames = new Set(columnTypes.keys());
 	const columnSpecMap = new Map((spec.columns ?? []).map((col) => [col.field, col]));
-	const excluded = new Set(spec.excludeColumns ?? []);
-
 	const enableColumnFilters = spec.enableColumnFilters !== false;
 	const enableColumnVisibilityToggles = spec.enableColumnVisibilityToggles !== false;
 	const enableColumnReorder = spec.enableColumnReorder === true;
@@ -132,16 +143,8 @@ function buildTableDataPlan(spec: TableSpec, data: QueryResponseData): TableData
 			console.warn(`[table-spec:${spec.id}] Missing column "${col.field}" referenced in columns[].`);
 		}
 	});
-	(spec.excludeColumns ?? []).forEach((field) => {
-		if (!columnNames.has(field)) {
-			console.warn(`[table-spec:${spec.id}] Missing column "${field}" referenced in excludeColumns[].`);
-		}
-	});
 
 	data.columns.forEach((col) => {
-		if (excluded.has(col.name)) {
-			return;
-		}
 		const columnSpec = columnSpecMap.get(col.name);
 		const label = columnSpec?.label ?? col.name;
 		const dataType = isNumberType(col.type) ? 'number' : 'text';

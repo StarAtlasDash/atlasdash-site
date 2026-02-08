@@ -38,5 +38,17 @@
       "source": "flipside",
       "dataset": "polis-locker-leaderboard"
     }
+  },
+  {
+    "id": "sb-faction-action-valuation-table",
+    "title": "Faction Action Valuation (SAGE)",
+    "label": "Game Economy",
+    "description": "Faction Action Valuation compares Starbase actions (upgrading & upkeeping) by faction, showing crafting rates, LP efficiency, and resulting ATLAS value after time, crew, and logistics constraints.",
+    "infoMd": "Faction actions determine how efficiently players convert time, crew, and logistics into economic value. This table evaluates Starbase-related actions across factions by combining production rates, crafting and upgrading time, LP generation, and market pricing to show their effective value in ATLAS. By breaking results down by faction and action type, the data makes trade-offs explicit: which actions generate the most LP, how efficiently LP converts into ATLAS, and where gains or losses emerge once time, cargo, and crew constraints are accounted for. The result is a structured view of faction-specific economic incentives rather than raw output alone.",
+    "query": {
+      "source": "flipside",
+      "dataset": "sb-faction-action-valuation"
+    },
+    "defaultSort": [{ "field": "LP_REDEMPTION_SORT", "desc": true }]
   }
 ]

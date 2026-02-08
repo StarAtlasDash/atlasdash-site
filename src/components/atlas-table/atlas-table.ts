@@ -9,7 +9,10 @@ import template from './atlas-table.html?raw';
 import style from './atlas-table.css?inline';
 import '../atlas-popup';
 import type { QueryRow } from '../../types/query';
-import type { TableDataPlan } from '../../tables/table-spec';
+import type { TableDataPlan, TableSpec } from '../../tables/table-spec';
+import { applyTableRenderPlan, buildTableRenderPlan } from '../../tables/table-spec';
+import type { QueryResponseData } from '../../types/queried_data';
+import type { Filter } from '../../types/filter';
 import {
 	createTable,
 	getCoreRowModel,
@@ -99,6 +102,9 @@ export class AtlasTable extends BaseComponentElement {
 	@bindTemplateElement('.table-scroll')
 	private tableScrollEl: HTMLDivElement | null = null;
 
+	@bindTemplateElement('.data-table')
+	private tableEl: HTMLTableElement | null = null;
+
 	@bindTemplateElement('.loading-overlay')
 	private loadingOverlayEl: HTMLDivElement | null = null;
 
@@ -115,18 +121,46 @@ export class AtlasTable extends BaseComponentElement {
 	private scrollHandle: number | null = null;
 	private readonly virtualOverscan = 8;
 	private readonly virtualRowThreshold = 150;
+	private sourceSpec: TableSpec | null = null;
+	private sourceData: QueryResponseData | null = null;
+	private filters: Filter[] = [];
 
 	constructor() {
 		super(template, style);
 	}
 
-	setTableData(plan: TableDataPlan) {
+	setTableData(plan: TableDataPlan, options?: { preserveState?: boolean }) {
 		this.tablePlan = plan;
-		this.initializeTable();
+		if (options?.preserveState && this.table) {
+			this.table?.setOptions((current) => ({
+				...current,
+				data: plan.rows,
+				columns: plan.columns as ColumnDef<QueryRow, unknown>[],
+				enableColumnFilters: plan.enableColumnFilters && !this.noFilters,
+				getFilteredRowModel: plan.enableColumnFilters && !this.noFilters ? getFilteredRowModel() : undefined,
+			}));
+		} else {
+			this.initializeTable();
+		}
 		this.setLoading(false);
 		if (this.isConnected) {
 			this.render();
 		}
+	}
+
+	setSourceData(spec: TableSpec, data: QueryResponseData) {
+		this.sourceSpec = spec;
+		this.sourceData = data;
+		this.applyFiltersAndRender();
+	}
+
+	set filter(value: Filter | Filter[] | null) {
+		this.filters = value ? (Array.isArray(value) ? value : [value]) : [];
+		this.applyFiltersAndRender();
+	}
+
+	get filter() {
+		return this.filters;
 	}
 
 	setLoading(loading: boolean) {
@@ -147,6 +181,9 @@ export class AtlasTable extends BaseComponentElement {
 		if (this.labelEl) {
 			this.labelEl.textContent = this.label || '';
 			this.labelEl.toggleAttribute('hidden', !this.label);
+		}
+		if (this.tableEl) {
+			this.tableEl.setAttribute('aria-label', this.title || 'Data table');
 		}
 		this.updateDescription();
 		this.updateLoadingState();
@@ -175,6 +212,32 @@ export class AtlasTable extends BaseComponentElement {
 	protected onSlotChange = () => {
 		this.updateDescription();
 	};
+
+	private applyFiltersAndRender() {
+		if (!this.sourceSpec || !this.sourceData) {
+			return;
+		}
+		const plan = buildTableRenderPlan(this.sourceSpec, this.sourceData, this.filters);
+		applyTableRenderPlan(
+			this as HTMLElement & { setTableData?: (plan: TableDataPlan, options?: { preserveState?: boolean }) => void },
+			plan,
+			{ preserveState: true }
+		);
+		if (this.table) {
+			this.table.setOptions((options) => ({
+				...options,
+				state: {
+					...this.tableState,
+					sorting: plan.table.initialState.sorting,
+				},
+			}));
+			this.tableState = {
+				...this.tableState,
+				sorting: plan.table.initialState.sorting,
+			};
+			this.renderTable();
+		}
+	}
 
 	private initializeTable() {
 		if (!this.tablePlan) {
@@ -601,7 +664,10 @@ export class AtlasTable extends BaseComponentElement {
 	private updateLoadingState() {
 		if (this.loadingOverlayEl) {
 			this.loadingOverlayEl.hidden = !this.loading;
+			this.loadingOverlayEl.setAttribute('role', 'status');
+			this.loadingOverlayEl.setAttribute('aria-live', 'polite');
 		}
+		this.setAttribute('aria-busy', this.loading ? 'true' : 'false');
 	}
 
 	private captureFilterFocus(): {

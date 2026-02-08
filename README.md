@@ -81,7 +81,7 @@ chart?.setOption({
 ### Attributes
 - `title`: Heading shown above the chart.
 - `description`: Short text shown below the chart (ignored if `slot="description"` is provided).
-- `chart-type`: `stacked-bar`, `bar`, `line`, or `area` (used for defaults like tooltip + grid).
+- `chart-type`: `stacked-bar`, `bar`, `line`, `area`, or `pie` (used for defaults like tooltip + grid).
 - `no-legend`: When present, hides the legend.
 
 ### Slots
@@ -129,3 +129,9 @@ The site is hosted on **Cloudflare Pages**. Build output is static and compatibl
 - The landing page is in `index.html` and introduces the three dashboard categories.
 - Charts use Apache ECharts; tables use TanStack Table (vanilla).
 - Data fetching and Web Components are being formalized as the project scales.
+
+## Filtering
+The grid and components support data-level filtering without changing the UI layout.
+- Charts and tables accept a `filter` (single or array of `Filter`) to apply AND-based row filtering.
+- Grid items can define `filter` and `excludeFilters` for static row filtering.
+- Grid rows can define filter selectors that render `<atlas-filter>` controls and target one or more charts/tables.

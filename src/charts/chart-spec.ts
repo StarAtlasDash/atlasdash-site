@@ -2,8 +2,10 @@ import type * as echarts from 'echarts';
 import type { QueryResponseData } from '../types/queried_data';
 import type { QueryRow, QueryValue, R2QueryRef } from '../types/query';
 import { renderMarkdown } from '../utils/markdown';
+import type { Filter } from '../types/filter';
+import { applyExcludeFiltersToData, applyFiltersToData, normalizeFilters, resolveFilterOverrides } from '../utils/filters';
 
-export type ChartType = 'bar' | 'line' | 'area' | 'stacked-bar';
+export type ChartType = 'bar' | 'line' | 'area' | 'stacked-bar' | 'pie';
 
 export interface ChartAxisSpec {
 	field: string;
@@ -90,7 +92,7 @@ export interface ChartSpec {
 	infoHtml?: string;
 	chartType: ChartType;
 	query: R2QueryRef;
-	xAxis: ChartAxisSpec;
+	xAxis?: ChartAxisSpec;
 	xWindowDays?: number;
 	xZoom?: ChartZoomSpec;
 	enableSecondaryAxis?: boolean;
@@ -103,7 +105,10 @@ export interface ChartSpec {
 	seriesFromColumns?: ChartSeriesFromColumns;
 	legend?: boolean;
 	sort?: ChartSortSpec;
+	excludeFilters?: Filter[];
 }
+
+type CartesianChartSpec = ChartSpec & { xAxis: ChartAxisSpec; chartType: Exclude<ChartType, 'pie'> };
 
 export interface ChartRenderPlan {
 	attrs: {
@@ -116,6 +121,7 @@ export interface ChartRenderPlan {
 	};
 	descriptionHtml?: string;
 	infoHtml?: string;
+	colorscheme?: string[];
 	option: echarts.EChartsOption;
 }
 
@@ -123,10 +129,21 @@ export function buildR2Url(query: R2QueryRef) {
 	return `https://data.atlasdash.io/${query.source}/${query.dataset}/latest.json`;
 }
 
-export function buildChartRenderPlan(spec: ChartSpec, data: QueryResponseData): ChartRenderPlan {
-	const option = buildChartOption(spec, data);
-	const descriptionContent = spec.descriptionMd ?? spec.descriptionHtml ?? spec.description;
-	const infoContent = spec.infoMd ?? spec.infoHtml;
+export function buildChartRenderPlan(
+	spec: ChartSpec,
+	data: QueryResponseData,
+	filters?: Filter | Filter[] | null
+): ChartRenderPlan {
+	const normalizedFilters = normalizeFilters(filters);
+	const filteredData = applyFiltersToData(
+		applyExcludeFiltersToData(data, spec.excludeFilters ?? []),
+		normalizedFilters
+	);
+	const option = buildChartOption(spec, filteredData);
+	const overrides = resolveFilterOverrides(normalizedFilters);
+	const descriptionContent =
+		overrides.description ?? spec.descriptionMd ?? spec.descriptionHtml ?? spec.description;
+	const infoContent = overrides.info ?? spec.infoMd ?? spec.infoHtml;
 	const descriptionHtml = descriptionContent ? renderMarkdown(descriptionContent) : undefined;
 	const infoHtml = infoContent ? renderMarkdown(infoContent) : undefined;
 	const attrs: ChartRenderPlan['attrs'] = {
@@ -140,7 +157,7 @@ export function buildChartRenderPlan(spec: ChartSpec, data: QueryResponseData): 
 	if (spec.legend === false) {
 		attrs.noLegend = true;
 	}
-	if (spec.xAxis.labelDensity) {
+	if (spec.xAxis?.labelDensity) {
 		attrs.xLabelDensity = spec.xAxis.labelDensity;
 	}
 
@@ -148,6 +165,7 @@ export function buildChartRenderPlan(spec: ChartSpec, data: QueryResponseData): 
 		attrs,
 		descriptionHtml,
 		infoHtml,
+		colorscheme: overrides.colorscheme,
 		option,
 	};
 }
@@ -181,6 +199,7 @@ export function applyChartRenderPlan(
 
 	upsertSlot(element, 'description', plan.descriptionHtml);
 	upsertPopupSlot(element, 'info', plan.infoHtml);
+	applyChartColorscheme(element, plan.colorscheme);
 
 	if (typeof element.setOption !== 'function') {
 		throw new Error('Expected <atlas-chart> element with setOption().');
@@ -191,37 +210,44 @@ export function applyChartRenderPlan(
 export function buildChartOption(spec: ChartSpec, data: QueryResponseData): echarts.EChartsOption {
 	const columnTypes = new Map(data.columns.map((col) => [col.name, col.type]));
 	const columnNames = new Set(columnTypes.keys());
-	assertColumn(columnNames, spec.xAxis.field, 'xAxis.field', spec.id);
 
-	const seriesFromField = spec.seriesFromField;
-	if (seriesFromField) {
-		assertColumn(columnNames, seriesFromField.nameField, 'seriesFromField.nameField', spec.id);
-		assertColumn(columnNames, seriesFromField.valueField, 'seriesFromField.valueField', spec.id);
+	if (spec.chartType === 'pie') {
+		return buildPieOption(spec, data, columnTypes, columnNames);
 	}
 
-	const seriesFromColumns = spec.seriesFromColumns
-		? filterSeriesColumns(spec.seriesFromColumns, columnNames, spec.id)
-		: undefined;
-	const explicitSeries = spec.series ? filterExplicitSeries(spec.series, columnNames, spec.id) : undefined;
-	const zoomSpec = spec.xZoom ? normalizeZoomSpec(spec.xZoom, columnNames, spec.id) : undefined;
-	const effectiveSpec = zoomSpec ? { ...spec, xZoom: zoomSpec } : spec;
+	requireXAxis(spec);
+	const cartSpec: CartesianChartSpec = spec;
+	assertColumn(columnNames, cartSpec.xAxis.field, 'xAxis.field', cartSpec.id);
 
-	const windowedRows = applyWindow(normalizeRows(data), spec, columnTypes);
-	const rows = sortRows(windowedRows, spec, data.columns);
-	const xValues = getXAxisValues(rows, spec, columnTypes);
-	const useTimeAxis = (spec.xAxis.type ?? 'category') === 'time';
-	const xAxisType = columnTypes.get(spec.xAxis.field);
+	const seriesFromField = cartSpec.seriesFromField;
+	if (seriesFromField) {
+		assertColumn(columnNames, seriesFromField.nameField, 'seriesFromField.nameField', cartSpec.id);
+		assertColumn(columnNames, seriesFromField.valueField, 'seriesFromField.valueField', cartSpec.id);
+	}
+
+	const seriesFromColumns = cartSpec.seriesFromColumns
+		? filterSeriesColumns(cartSpec.seriesFromColumns, columnNames, cartSpec.id)
+		: undefined;
+	const explicitSeries = cartSpec.series ? filterExplicitSeries(cartSpec.series, columnNames, cartSpec.id) : undefined;
+	const zoomSpec = cartSpec.xZoom ? normalizeZoomSpec(cartSpec.xZoom, columnNames, cartSpec.id) : undefined;
+	const effectiveSpec = zoomSpec ? { ...cartSpec, xZoom: zoomSpec } : cartSpec;
+
+	const windowedRows = applyWindow(normalizeRows(data), cartSpec, columnTypes);
+	const rows = sortRows(windowedRows, cartSpec, data.columns);
+	const xValues = getXAxisValues(rows, cartSpec, columnTypes);
+	const useTimeAxis = (cartSpec.xAxis.type ?? 'category') === 'time';
+	const xAxisType = columnTypes.get(cartSpec.xAxis.field);
 	const shouldRotateXAxis = xAxisType === 'date';
-	const allowSecondaryAxis = !!spec.enableSecondaryAxis;
-	const lockYAxisMax = spec.lockYAxisMax !== false;
-	const roundYAxisMax = spec.yAxisMaxRound !== false;
+	const allowSecondaryAxis = !!cartSpec.enableSecondaryAxis;
+	const lockYAxisMax = cartSpec.lockYAxisMax !== false;
+	const roundYAxisMax = cartSpec.yAxisMaxRound !== false;
 
 	const series: echarts.SeriesOption[] = [];
 
-	if (spec.seriesFromField) {
+	if (cartSpec.seriesFromField) {
 		series.push(
 			...buildSeriesFromField(
-				spec,
+				cartSpec,
 				seriesFromField!,
 				rows,
 				xValues,
@@ -235,7 +261,7 @@ export function buildChartOption(spec: ChartSpec, data: QueryResponseData): echa
 	if (seriesFromColumns) {
 		series.push(
 			...buildSeriesFromColumns(
-				spec,
+				cartSpec,
 				seriesFromColumns,
 				rows,
 				xValues,
@@ -250,7 +276,7 @@ export function buildChartOption(spec: ChartSpec, data: QueryResponseData): echa
 		series.push(
 			...explicitSeries.map((seriesSpec) =>
 				buildSeriesFromSpec(
-					spec,
+					cartSpec,
 					seriesSpec,
 					rows,
 					xValues,
@@ -267,12 +293,12 @@ export function buildChartOption(spec: ChartSpec, data: QueryResponseData): echa
 	const shadowConfig = buildShadowSeries(effectiveSpec, normalizedSeries, rows, xValues, useTimeAxis, columnTypes);
 	const seriesForOption = shadowConfig?.series ?? normalizedSeries;
 
-	const axisDecimals = deriveAxisDecimals(seriesForOption, allowSecondaryAxis);
+	const axisDecimals = deriveAxisDecimals(normalizedSeries, allowSecondaryAxis);
 	const option: echarts.EChartsOption = {
 		xAxis: {
 			type: useTimeAxis ? 'time' : 'category',
 			data: useTimeAxis ? undefined : xValues.map((value) => String(value ?? '')),
-			name: spec.xAxis.label,
+			name: cartSpec.xAxis.label,
 			axisLabel: shouldRotateXAxis ? { rotate: 45 } : undefined,
 			axisTick: {
 				show: true,
@@ -283,7 +309,7 @@ export function buildChartOption(spec: ChartSpec, data: QueryResponseData): echa
 				},
 			},
 		},
-		yAxis: buildYAxis(spec, normalizedSeries, allowSecondaryAxis, axisDecimals),
+		yAxis: buildYAxis(cartSpec, normalizedSeries, allowSecondaryAxis, axisDecimals),
 		series: seriesForOption,
 		tooltip: {
 			trigger: 'axis',
@@ -303,10 +329,122 @@ export function buildChartOption(spec: ChartSpec, data: QueryResponseData): echa
 		option.grid = { ...baseGrid, bottom: 10 };
 	}
 	if (lockYAxisMax) {
-		applyFixedYAxisMax(option, normalizedSeries, spec, allowSecondaryAxis, roundYAxisMax);
+		applyFixedYAxisMax(option, normalizedSeries, cartSpec, allowSecondaryAxis, roundYAxisMax);
 	}
 
 	return option;
+}
+
+function buildPieOption(
+	spec: ChartSpec,
+	data: QueryResponseData,
+	columnTypes: Map<string, string>,
+	columnNames: Set<string>
+): echarts.EChartsOption {
+	const seriesFromField = spec.seriesFromField;
+	if (!seriesFromField) {
+		throw new Error(`[chart-spec:${spec.id}] Pie charts require seriesFromField.`);
+	}
+	assertColumn(columnNames, seriesFromField.nameField, 'seriesFromField.nameField', spec.id);
+	assertColumn(columnNames, seriesFromField.valueField, 'seriesFromField.valueField', spec.id);
+
+	let rows = normalizeRows(data);
+	if (spec.xAxis) {
+		rows = applyWindowPie(rows, spec, columnTypes);
+		rows = sortRowsPie(rows, spec, data.columns);
+	}
+	const totals = new Map<string, number>();
+	rows.forEach((row) => {
+		const nameValue = row[seriesFromField.nameField];
+		if (nameValue == null || nameValue === '') {
+			return;
+		}
+		const name = String(nameValue);
+		const rawValue = row[seriesFromField.valueField];
+		if (rawValue == null || rawValue === '') {
+			return;
+		}
+		const coerced = coerceValue(rawValue, columnTypes.get(seriesFromField.valueField));
+		const numeric = typeof coerced === 'number' ? coerced : Number(coerced);
+		if (!Number.isFinite(numeric) || numeric === 0) {
+			return;
+		}
+		totals.set(name, (totals.get(name) ?? 0) + numeric);
+	});
+
+	const seriesData = Array.from(totals.entries())
+		.map(([name, value]) => ({ name, value }))
+		.sort((a, b) => b.value - a.value);
+
+	return {
+		tooltip: { trigger: 'item' },
+		series: [
+			{
+				type: 'pie',
+				name: spec.title,
+				radius: ['45%', '70%'],
+				avoidLabelOverlap: true,
+				label: { show: true, formatter: '{b}', fontSize: 11 },
+				emphasis: {
+					label: { show: true, fontSize: 12, fontWeight: 'bold' },
+				},
+				labelLine: { show: true, length: 12, length2: 8 },
+				data: seriesData,
+			},
+		],
+	};
+}
+
+function applyWindowPie(
+	rows: QueryRow[],
+	spec: ChartSpec,
+	columnTypes: Map<string, string>
+): QueryRow[] {
+	if (!spec.xAxis || !spec.xWindowDays) {
+		return rows;
+	}
+	const field = spec.xAxis.field;
+	const xType = columnTypes.get(field);
+	if (xType !== 'date') {
+		return rows;
+	}
+	let maxTime = Number.NEGATIVE_INFINITY;
+	for (const row of rows) {
+		const time = toDateMs(row[field]);
+		if (Number.isFinite(time) && time > maxTime) {
+			maxTime = time;
+		}
+	}
+	if (!Number.isFinite(maxTime)) {
+		return rows;
+	}
+	const cutoff = maxTime - spec.xWindowDays * 24 * 60 * 60 * 1000;
+	return rows.filter((row) => {
+		const time = toDateMs(row[field]);
+		return Number.isFinite(time) ? time >= cutoff : true;
+	});
+}
+
+function sortRowsPie(
+	rows: QueryRow[],
+	spec: ChartSpec,
+	columns: QueryResponseData['columns']
+): QueryRow[] {
+	if (!spec.sort || !spec.xAxis) {
+		return rows;
+	}
+	const field = spec.sort.field ?? spec.xAxis.field;
+	const order = spec.sort.order ?? 'asc';
+	const columnTypes = new Map(columns.map((col) => [col.name, col.type]));
+	const sortType = spec.sort.type ?? inferSortType(field, columnTypes.get(field));
+	const factor = order === 'desc' ? -1 : 1;
+	return rows.slice().sort((a, b) => compareValues(a[field], b[field], sortType) * factor);
+}
+
+function requireXAxis(spec: ChartSpec): asserts spec is CartesianChartSpec {
+	if (!spec.xAxis) {
+		throw new Error(`[chart-spec:${spec.id}] Missing xAxis definition.`);
+	}
 }
 
 function normalizeRows(data: QueryResponseData): QueryRow[] {
@@ -393,7 +531,7 @@ function normalizeZoomSpec(zoom: ChartZoomSpec, columns: Set<string>, chartId: s
 	return zoom;
 }
 
-function applyWindow(rows: QueryRow[], spec: ChartSpec, columnTypes: Map<string, string>): QueryRow[] {
+function applyWindow(rows: QueryRow[], spec: CartesianChartSpec, columnTypes: Map<string, string>): QueryRow[] {
 	if (!spec.xWindowDays) {
 		return rows;
 	}
@@ -423,7 +561,7 @@ function applyWindow(rows: QueryRow[], spec: ChartSpec, columnTypes: Map<string,
 
 function sortRows(
 	rows: QueryRow[],
-	spec: ChartSpec,
+	spec: CartesianChartSpec,
 	columns: QueryResponseData['columns']
 ): QueryRow[] {
 	if (!spec.sort) {
@@ -487,7 +625,7 @@ function compareValues(left: QueryValue, right: QueryValue, type: ChartSortSpec[
 	return String(left).localeCompare(String(right));
 }
 
-function getXAxisValues(rows: QueryRow[], spec: ChartSpec, columnTypes: Map<string, string>) {
+function getXAxisValues(rows: QueryRow[], spec: CartesianChartSpec, columnTypes: Map<string, string>) {
 	const raw = rows.map((row) => coerceValue(row[spec.xAxis.field], columnTypes.get(spec.xAxis.field)));
 	if (!spec.seriesFromField) {
 		return raw;
@@ -505,7 +643,7 @@ function getXAxisValues(rows: QueryRow[], spec: ChartSpec, columnTypes: Map<stri
 	return unique;
 }
 
-function resolveSeriesType(spec: ChartSpec, seriesSpec: ChartSeriesSpec): 'bar' | 'line' {
+function resolveSeriesType(spec: CartesianChartSpec, seriesSpec: ChartSeriesSpec): 'bar' | 'line' {
 	if (seriesSpec.type === 'area') {
 		return 'line';
 	}
@@ -551,7 +689,7 @@ function makeSeriesOption(params: {
 }
 
 function buildSeriesFromSpec(
-	spec: ChartSpec,
+	spec: CartesianChartSpec,
 	seriesSpec: ChartSeriesSpec,
 	rows: QueryRow[],
 	xValues: QueryValue[],
@@ -579,7 +717,7 @@ function buildSeriesFromSpec(
 }
 
 function buildSeriesFromField(
-	spec: ChartSpec,
+	spec: CartesianChartSpec,
 	source: ChartSeriesFromField,
 	rows: QueryRow[],
 	xValues: QueryValue[],
@@ -636,7 +774,7 @@ function buildSeriesFromField(
 }
 
 function buildSeriesFromColumns(
-	spec: ChartSpec,
+	spec: CartesianChartSpec,
 	source: ChartSeriesFromColumns,
 	rows: QueryRow[],
 	xValues: QueryValue[],
@@ -781,7 +919,7 @@ function normalizeSeriesAxis(series: echarts.SeriesOption): echarts.SeriesOption
 }
 
 function buildShadowSeries(
-	spec: ChartSpec,
+	spec: CartesianChartSpec,
 	series: echarts.SeriesOption[],
 	rows: QueryRow[],
 	xValues: QueryValue[],
@@ -1106,7 +1244,7 @@ function extractNumericValue(point: unknown): number | null {
 }
 
 function buildDataZoom(
-	spec: ChartSpec,
+	spec: CartesianChartSpec,
 	xValues: QueryValue[],
 	columnTypes: Map<string, string>,
 	useTimeAxis: boolean
@@ -1160,7 +1298,7 @@ function resolveZoomWindow(
 	zoom: ChartZoomSpec,
 	xValues: QueryValue[],
 	columnTypes: Map<string, string>,
-	spec: ChartSpec,
+	spec: CartesianChartSpec,
 	useTimeAxis: boolean
 ) {
 	if (zoom.startValue !== undefined || zoom.endValue !== undefined) {
@@ -1286,4 +1424,27 @@ function upsertPopupSlot(element: HTMLElement, slotName: string, html?: string) 
 		return;
 	}
 	upsertSlot(element, slotName, html);
+}
+
+function applyChartColorscheme(element: HTMLElement, colorscheme?: string[]) {
+	const style = element.style;
+	if (!colorscheme || !colorscheme.length) {
+		for (let i = 1; i <= 6; i += 1) {
+			style.removeProperty(`--chart-${i}`);
+			style.removeProperty(`--areachart-${i}`);
+		}
+		return;
+	}
+	colorscheme.forEach((color, index) => {
+		if (!color) {
+			return;
+		}
+		const slot = index + 1;
+		style.setProperty(`--chart-${slot}`, color);
+		style.setProperty(`--areachart-${slot}`, color);
+	});
+	for (let i = colorscheme.length + 1; i <= 6; i += 1) {
+		style.removeProperty(`--chart-${i}`);
+		style.removeProperty(`--areachart-${i}`);
+	}
 }

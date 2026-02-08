@@ -1,13 +1,13 @@
 import { registerAtlasChart } from './components/atlas-chart';
+import { registerAtlasFilter } from './components/atlas-filter';
 import { registerAtlasTable } from './components/atlas-table';
 import { registerAtlasAnalyticsGrid } from './components/atlas-analytics-grid';
 import type { ChartSpec } from './charts/chart-spec';
-import { applyChartRenderPlan, buildChartRenderPlan } from './charts/chart-spec';
 import type { TableSpec } from './tables/table-spec';
-import { applyTableRenderPlan, buildTableRenderPlan } from './tables/table-spec';
 import { getQueryData } from './data/query-cache';
 
 registerAtlasChart();
+registerAtlasFilter();
 registerAtlasTable();
 registerAtlasAnalyticsGrid();
 
@@ -43,9 +43,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 		}
 
 		try {
-			const data = (await getQueryData(spec.query)) as Parameters<typeof buildChartRenderPlan>[1];
-			const plan = buildChartRenderPlan(spec, data);
-			applyChartRenderPlan(chartEl as HTMLElement & { setOption?: (opt: unknown) => void }, plan);
+			const data = await getQueryData(spec.query);
+			(chartEl as HTMLElement & { setSourceData?: (spec: ChartSpec, data: unknown) => void }).setSourceData?.(
+				spec,
+				data
+			);
 		} catch (error) {
 			console.warn(`⚠️ Failed to render chart "${chartId}".`, error);
 		}
@@ -63,9 +65,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 			continue;
 		}
 		try {
-			const data = (await getQueryData(spec.query)) as Parameters<typeof buildTableRenderPlan>[1];
-			const plan = buildTableRenderPlan(spec, data);
-			applyTableRenderPlan(tableEl as HTMLElement & { setTableData?: (plan: unknown) => void }, plan);
+			const data = await getQueryData(spec.query);
+			(tableEl as HTMLElement & { setSourceData?: (spec: TableSpec, data: unknown) => void }).setSourceData?.(
+				spec,
+				data
+			);
 		} catch (error) {
 			console.warn(`⚠️ Failed to render table "${tableId}".`, error);
 		}
