@@ -335,8 +335,11 @@ p.lead {
 	margin: 0 auto;
 }
 
-.logos > img {
-	height: 40px;
+.logos > a {
+	display: inline-flex;
+}
+
+.logos > a > img {
 	object-fit: contain;
 	opacity: 0.15;
 
@@ -345,11 +348,19 @@ p.lead {
 	}
 }
 
-.logos > img[alt="Aephia Industries"] {
-	height: 20px;
+.logos > a > img[alt="Star Atlas"] {
+	height: 48px;
 }
 
-.logos>img[alt="z.ink"] {
+.logos > a > img[alt="Aephia Industries"] {
+	height: 22px;
+}
+
+.logos > a > img[alt="Solana"] {
+	height: 18px;
+}
+
+.logos > a > img[alt="z.ink"] {
 	height: 20px;
 }
 
@@ -402,7 +413,7 @@ p.lead {
 
 .chart-block {
 	width: 100%;
-	height: 400px;
+	height: 480px;
 	/* border: 1px solid var(--line);
 	border-radius: var(--radius);
 	box-shadow: var(--shadow); */
@@ -432,7 +443,7 @@ atlas-analytics-grid:not(:defined) {
 }
 
 atlas-chart.chart-block:not(:defined) {
-	min-height: 400px;
+	min-height: 480px;
 }
 
 /* --- Responsive Tweaks --- */
