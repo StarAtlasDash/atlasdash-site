@@ -2,6 +2,7 @@ import { registerAtlasChart } from './components/atlas-chart';
 import { registerAtlasFilter } from './components/atlas-filter';
 import { registerAtlasTable } from './components/atlas-table';
 import { registerAtlasAnalyticsGrid } from './components/atlas-analytics-grid';
+import { registerAtlasNavbar } from './components/atlas-navbar';
 import type { ChartSpec } from './charts/chart-spec';
 import type { TableSpec } from './tables/table-spec';
 import { getQueryData } from './data/query-cache';
@@ -10,6 +11,7 @@ registerAtlasChart();
 registerAtlasFilter();
 registerAtlasTable();
 registerAtlasAnalyticsGrid();
+registerAtlasNavbar();
 
 document.addEventListener('DOMContentLoaded', async () => {
 	const [chartResponse, tableResponse] = await Promise.all([
