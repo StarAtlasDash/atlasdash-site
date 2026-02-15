@@ -72,16 +72,12 @@
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+
+	--mw: clamp(0px, calc((100vw - 500px) * (48 / 500)), 3rem);
+	--mh: clamp(0px, calc((100vh - 500px) * (48 / 500)), 3rem);
+	--dynamic-outer-padding: min(var(--mw), var(--mh));
 }
 
-@media (max-width: 640px),
-(max-height: 640px) {
-	:root {
-		--mw: clamp(0px, calc((100vw - 320px) * (48 / 320)), 48px);
-		--mh: clamp(0px, calc((100vh - 320px) * (48 / 320)), 48px);
-		--dynamic-outer-padding: min(var(--mw), var(--mh));
-	}
-}
 
 body {
 	margin: 0;
@@ -105,6 +101,10 @@ body {
 	border: var(--outer-border-size) solid var(--color-outer-border);
 	border-radius: var(--outer-border-radius);
 	background-color: var(--color-inner-background);
+
+	@media screen and (max-width: 500px) {
+		border: none;
+	}
 }
 
 main > .hero,
@@ -653,19 +653,12 @@ p.lead {
 	height: 400px;
 }
 
-atlas-chart,
-atlas-table,
-atlas-analytics-grid,
-atlas-panel {
-	display: block;
-}
-
 atlas-chart:not(:defined),
 atlas-table:not(:defined),
 atlas-analytics-grid:not(:defined),
 atlas-panel:not(:defined) {
 	display: block;
-	min-height: 260px;
+	min-height: 480px;
 }
 
 atlas-chart.chart-block:not(:defined) {
@@ -695,19 +688,5 @@ atlas-chart.chart-block:not(:defined) {
 	.card {
 		padding: 18px;
 	}
-/* 
-	.chart-block {
-		height: 300px;
-	} */
 }
 
-@media (max-width: 480px) {
-	.hero h1 {
-		font-size: 2rem;
-		max-width: 18ch;
-	}
-
-	/* .chart-block {
-		height: 260px;
-	} */
-}

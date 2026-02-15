@@ -751,7 +751,7 @@ export class AtlasAnalyticsGrid extends BaseComponentElement {
 		if (force) {
 			container.innerHTML = '';
 		} else if (container.childElementCount > 0) {
-			const existing = container.firstElementChild as HTMLElement | null;
+			const existing = this.getRenderedDataElement(container);
 			if (existing) {
 				(existing as { filter?: Filter[] | null }).filter = item.filters ?? null;
 				this.itemFilterSignatures.set(item.id, this.getFilterSignature(item.filters));
@@ -760,31 +760,36 @@ export class AtlasAnalyticsGrid extends BaseComponentElement {
 		}
 
 		if (chartSpec) {
-				const chartEl = document.createElement('atlas-chart') as HTMLElement & {
-					setSourceData?: (spec: ChartSpec, data: unknown) => void;
-					setLoading?: (loading: boolean) => void;
-					filter?: Filter[] | null;
-				};
-				chartEl.filter = item.filters ?? null;
-				chartEl.setLoading?.(true);
-				container.appendChild(chartEl);
-				try {
-					const data = await getQueryData(chartSpec.query);
-					if (!this.isTokenActive(token, container)) {
-						return;
-					}
-					const specOverride = item.excludeFilters
-						? { ...chartSpec, excludeFilters: item.excludeFilters }
-						: chartSpec;
-					chartEl.setSourceData?.(specOverride, data);
-					this.itemFilterSignatures.set(item.id, this.getFilterSignature(item.filters));
-				} catch (error) {
-					console.warn(`⚠️ Failed to render chart "${chartSpec.id}".`, error);
+			const panelEl = document.createElement('atlas-panel');
+			panelEl.setAttribute('type', 'chart');
+			const chartEl = document.createElement('atlas-chart') as HTMLElement & {
+				setSourceData?: (spec: ChartSpec, data: unknown) => void;
+				setLoading?: (loading: boolean) => void;
+				filter?: Filter[] | null;
+			};
+			chartEl.filter = item.filters ?? null;
+			chartEl.setLoading?.(true);
+			panelEl.appendChild(chartEl);
+			container.appendChild(panelEl);
+			try {
+				const data = await getQueryData(chartSpec.query);
+				if (!this.isTokenActive(token, container)) {
+					return;
 				}
-				return;
+				const specOverride = item.excludeFilters
+					? { ...chartSpec, excludeFilters: item.excludeFilters }
+					: chartSpec;
+				chartEl.setSourceData?.(specOverride, data);
+				this.itemFilterSignatures.set(item.id, this.getFilterSignature(item.filters));
+			} catch (error) {
+				console.warn(`⚠️ Failed to render chart "${chartSpec.id}".`, error);
 			}
+			return;
+		}
 
 		if (tableSpec) {
+			const panelEl = document.createElement('atlas-panel');
+			panelEl.setAttribute('type', 'table');
 			const tableEl = document.createElement('atlas-table') as HTMLElement & {
 				setSourceData?: (spec: TableSpec, data: unknown) => void;
 				setLoading?: (loading: boolean) => void;
@@ -792,7 +797,8 @@ export class AtlasAnalyticsGrid extends BaseComponentElement {
 			};
 			tableEl.filter = item.filters ?? null;
 			tableEl.setLoading?.(true);
-			container.appendChild(tableEl);
+			panelEl.appendChild(tableEl);
+			container.appendChild(panelEl);
 			try {
 				const data = await getQueryData(tableSpec.query);
 				if (!this.isTokenActive(token, container)) {
@@ -807,6 +813,18 @@ export class AtlasAnalyticsGrid extends BaseComponentElement {
 				console.warn(`⚠️ Failed to render table "${tableSpec.id}".`, error);
 			}
 		}
+	}
+
+	private getRenderedDataElement(container: HTMLElement): HTMLElement | null {
+		const direct = container.firstElementChild as HTMLElement | null;
+		if (!direct) {
+			return null;
+		}
+		const tagName = direct.tagName.toLowerCase();
+		if (tagName === 'atlas-chart' || tagName === 'atlas-table') {
+			return direct;
+		}
+		return direct.querySelector<HTMLElement>('atlas-chart, atlas-table');
 	}
 
 	private isTokenActive(token: number, container: HTMLElement): boolean {

@@ -23,7 +23,7 @@
       },
       {
         "id": "sb-faction-action-valuation-table",
-        "span": 1,
+        "span": 2,
         "minHeight": 480,
         "excludeFilters": [
           { "field": "NAME", "value": "" }
