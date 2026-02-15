@@ -28,8 +28,10 @@
 .title-row {
 	display: flex;
 	align-items: center;
+	justify-content: space-between;
 	gap: 0.5rem;
-	flex-wrap: wrap;
+	width: 100%;
+	flex-wrap: nowrap;
 }
 
 .table-title {
@@ -43,6 +45,13 @@
 	position: relative;
 	display: inline-flex;
 	align-items: center;
+}
+
+.column-toggle {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	flex: 0 0 auto;
 }
 
 
@@ -62,15 +71,13 @@
 .column-toggle-popup {
 	--popup-trigger-bg: #111111;
 	--popup-trigger-color: #ffffff;
-	--popup-trigger-radius: 4px;
+	--popup-trigger-radius: 0.55rem;
 	--popup-trigger-border: transparent;
-	--popup-trigger-width: 1rem;
-	--popup-trigger-height: 100%;
-	--popup-trigger-icon-size: 0.75rem;
-	align-self: stretch;
-	height: 100%;
-	display: flex;
-	align-items: stretch;
+	--popup-trigger-width: 2.25rem;
+	--popup-trigger-height: 2.25rem;
+	--popup-trigger-icon-size: 0.95rem;
+	display: inline-flex;
+	align-items: center;
 }
 
 .column-toggle-popup img[slot='trigger'] {
@@ -81,30 +88,15 @@
 	display: flex;
 	flex-direction: column;
 	gap: 0.35rem;
+	max-height: 520px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding-right: 0.25rem;
 }
 
 .column-toggle-list input[type='checkbox'] {
 	accent-color: #111111;
 	background-color: #ffffff;
-}
-
-.data-table thead tr th:last-child {
-	position: relative;
-	padding-right: 2rem;
-}
-
-.data-table thead tr th:last-child .column-toggle {
-	position: absolute;
-	right: 0.25rem;
-	top: 0;
-	bottom: 0;
-	display: inline-flex;
-	align-items: center;
-	height: 100%;
-}
-
-.data-table thead tr th:last-child .sort-indicator {
-	margin-right: 0.5rem;
 }
 
 .table-area {
@@ -257,6 +249,10 @@
 	align-items: flex-start;
 	gap: 0.5rem;
 	flex: 0 0 auto;
+
+	@media (max-width: 640px) {
+		margin-left: 1rem;
+	}
 }
 
 .table-description[hidden] {
@@ -320,15 +316,5 @@
 @keyframes atlas-spin {
 	to {
 		transform: rotate(360deg);
-	}
-}
-
-@media (max-width: 640px) {
-	.data-table {
-		min-width: 520px;
-	}
-
-	.table-description {
-		margin: 0 0.75rem;
 	}
 }

@@ -135,7 +135,6 @@ export class AtlasPopup extends BaseComponentElement {
 		this.stopAutoUpdate();
 	}
 
-
 	private onToggle = (event?: Event) => {
 		event?.stopPropagation();
 		this.setOpen(!this.open);
@@ -242,13 +241,13 @@ export class AtlasPopup extends BaseComponentElement {
 						return !!assignedNode.textContent?.trim();
 					}
 					if (assignedNode instanceof HTMLElement) {
-						return !!assignedNode.textContent?.trim() || !!assignedNode.querySelector('*');
+						return true;
 					}
 					return true;
 				});
 			}
 			if (node instanceof HTMLElement) {
-				return !!node.textContent?.trim() || !!node.querySelector('*');
+				return true;
 			}
 			return false;
 		});

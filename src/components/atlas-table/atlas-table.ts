@@ -298,13 +298,10 @@ export class AtlasTable extends BaseComponentElement {
 
 		const headerGroups = this.table.getHeaderGroups();
 		const stickyId = this.getStickyColumnId();
-		const showColumnToggle = !!tablePlan.enableColumnVisibilityToggles;
-		const lastHeaderRowIndex = Math.max(0, headerGroups.length - 1);
 
 		headerGroups.forEach((group, groupIndex) => {
 			const rowEl = document.createElement('tr');
-			const lastHeaderIndex = this.findLastHeaderIndex(group.headers);
-			group.headers.forEach((header, headerIndex) => {
+			group.headers.forEach((header) => {
 				const cell = document.createElement('th');
 				const column = header.column;
 				const meta = column.columnDef.meta as { dataType?: string } | undefined;
@@ -350,16 +347,6 @@ export class AtlasTable extends BaseComponentElement {
 					cell.classList.add('sticky-col');
 					if (groupIndex === 0) {
 						cell.classList.add('header');
-					}
-				}
-				if (
-					showColumnToggle &&
-					groupIndex === lastHeaderRowIndex &&
-					headerIndex === lastHeaderIndex &&
-					this.columnToggleWrap
-				) {
-					if (this.columnToggleWrap) {
-						cell.appendChild(this.columnToggleWrap);
 					}
 				}
 				rowEl.appendChild(cell);
@@ -707,16 +694,6 @@ export class AtlasTable extends BaseComponentElement {
 			input.setSelectionRange(focusState.selectionStart, focusState.selectionEnd);
 		}
 	}
-
-	private findLastHeaderIndex(headers: Array<{ isPlaceholder: boolean }>): number {
-		for (let i = headers.length - 1; i >= 0; i -= 1) {
-			if (!headers[i].isPlaceholder) {
-				return i;
-			}
-		}
-		return Math.max(0, headers.length - 1);
-	}
-
 
 	private getStickyColumnId() {
 		if (!this.tablePlan?.stickyFirstColumn || !this.table) {
