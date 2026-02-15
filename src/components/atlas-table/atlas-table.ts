@@ -75,9 +75,6 @@ export class AtlasTable extends BaseComponentElement {
 	@bindTemplateElement('.table-title')
 	private titleEl: HTMLElement | null = null;
 
-	@bindTemplateElement('.table-label')
-	private labelEl: HTMLElement | null = null;
-
 	@bindTemplateElement('.description-text')
 	private descriptionEl: HTMLElement | null = null;
 
@@ -177,10 +174,6 @@ export class AtlasTable extends BaseComponentElement {
 		if (this.titleEl) {
 			this.titleEl.textContent = this.title || '';
 			this.titleEl.toggleAttribute('hidden', !this.title);
-		}
-		if (this.labelEl) {
-			this.labelEl.textContent = this.label || '';
-			this.labelEl.toggleAttribute('hidden', !this.label);
 		}
 		if (this.tableEl) {
 			this.tableEl.setAttribute('aria-label', this.title || 'Data table');

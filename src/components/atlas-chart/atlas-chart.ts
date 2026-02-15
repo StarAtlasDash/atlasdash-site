@@ -45,9 +45,6 @@ export class AtlasChart extends BaseComponentElement {
 	@bindTemplateElement('.chart-description')
 	private descriptionWrap: HTMLElement | null = null;
 
-	@bindTemplateElement('.chart-label')
-	private labelEl: HTMLElement | null = null;
-
 	@bindTemplateElement('slot[name="description"]')
 	private descriptionSlot: HTMLSlotElement | null = null;
 
@@ -117,10 +114,6 @@ export class AtlasChart extends BaseComponentElement {
 		if (this.titleEl) {
 			this.titleEl.textContent = this.title || '';
 			this.titleEl.toggleAttribute('hidden', !this.title);
-		}
-		if (this.labelEl) {
-			this.labelEl.textContent = this.label || '';
-			this.labelEl.toggleAttribute('hidden', !this.label);
 		}
 
 		if (this.chartCanvas) {

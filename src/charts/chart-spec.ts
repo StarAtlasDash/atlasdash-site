@@ -141,19 +141,37 @@ export function buildChartRenderPlan(
 	);
 	const option = buildChartOption(spec, filteredData);
 	const overrides = resolveFilterOverrides(normalizedFilters);
-	const descriptionContent =
-		overrides.description ?? spec.descriptionMd ?? spec.descriptionHtml ?? spec.description;
-	const infoContent = overrides.info ?? spec.infoMd ?? spec.infoHtml;
-	const descriptionHtml = descriptionContent ? renderMarkdown(descriptionContent) : undefined;
-	const infoHtml = infoContent ? renderMarkdown(infoContent) : undefined;
+	const overrideDescription = normalizeTextContent(overrides.description);
+	const overrideInfo = normalizeTextContent(overrides.info);
+	const markdownDescription = normalizeTextContent(spec.descriptionMd);
+	const markdownInfo = normalizeTextContent(spec.infoMd);
+	const plainDescription = normalizeTextContent(spec.description);
+	const rawDescriptionHtml = normalizeTextContent(spec.descriptionHtml);
+	const rawInfoHtml = normalizeTextContent(spec.infoHtml);
+
+	const descriptionHtml =
+		overrideDescription
+			? renderMarkdown(overrideDescription)
+			: markdownDescription
+				? renderMarkdown(markdownDescription)
+				: rawDescriptionHtml
+					? rawDescriptionHtml
+					: plainDescription
+						? renderMarkdown(plainDescription)
+						: undefined;
+	const infoHtml =
+		overrideInfo
+			? renderMarkdown(overrideInfo)
+			: markdownInfo
+				? renderMarkdown(markdownInfo)
+				: rawInfoHtml
+					? rawInfoHtml
+					: undefined;
 	const attrs: ChartRenderPlan['attrs'] = {
 		title: spec.title,
 		label: spec.label,
 		chartType: spec.chartType,
 	};
-	if (spec.description && !descriptionHtml) {
-		attrs.description = spec.description;
-	}
 	if (spec.legend === false) {
 		attrs.noLegend = true;
 	}
@@ -168,6 +186,11 @@ export function buildChartRenderPlan(
 		colorscheme: overrides.colorscheme,
 		option,
 	};
+}
+
+function normalizeTextContent(value?: string): string | undefined {
+	const trimmed = value?.trim();
+	return trimmed ? trimmed : undefined;
 }
 
 export function applyChartRenderPlan(
@@ -294,6 +317,8 @@ export function buildChartOption(spec: ChartSpec, data: QueryResponseData): echa
 	const seriesForOption = shadowConfig?.series ?? normalizedSeries;
 
 	const axisDecimals = deriveAxisDecimals(normalizedSeries, allowSecondaryAxis);
+	const yAxis = buildYAxis(cartSpec, normalizedSeries, allowSecondaryAxis, axisDecimals);
+	const hasRightSideYAxis = containsRightSideYAxis(yAxis);
 	const option: echarts.EChartsOption = {
 		xAxis: {
 			type: useTimeAxis ? 'time' : 'category',
@@ -309,7 +334,7 @@ export function buildChartOption(spec: ChartSpec, data: QueryResponseData): echa
 				},
 			},
 		},
-		yAxis: buildYAxis(cartSpec, normalizedSeries, allowSecondaryAxis, axisDecimals),
+		yAxis,
 		series: seriesForOption,
 		tooltip: {
 			trigger: 'axis',
@@ -322,7 +347,7 @@ export function buildChartOption(spec: ChartSpec, data: QueryResponseData): echa
 	if (zoomConfig?.items.length) {
 		option.dataZoom = zoomConfig.items;
 	}
-	const baseGrid = { left: 32, right: 48, containLabel: true };
+	const baseGrid = { left: 32, right: hasRightSideYAxis ? 48 : 12, containLabel: true };
 	if (zoomConfig?.gridBottom !== undefined) {
 		option.grid = { ...baseGrid, bottom: zoomConfig.gridBottom };
 	} else {
@@ -906,6 +931,13 @@ function buildYAxis(
 			formatter: (value: unknown) => formatAxisTick(value, primaryDecimals),
 		},
 	};
+}
+
+function containsRightSideYAxis(yAxis: echarts.EChartsOption['yAxis']): boolean {
+	if (Array.isArray(yAxis)) {
+		return yAxis.some((axis) => (axis as { position?: string }).position === 'right');
+	}
+	return (yAxis as { position?: string } | undefined)?.position === 'right';
 }
 
 function normalizeSeriesAxis(series: echarts.SeriesOption): echarts.SeriesOption {

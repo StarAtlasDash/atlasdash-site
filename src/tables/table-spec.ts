@@ -77,18 +77,31 @@ export function buildTableRenderPlan(
 		normalizedFilters
 	);
 	const overrides = resolveFilterOverrides(normalizedFilters);
-	const descriptionContent = overrides.description ?? spec.descriptionMd ?? spec.description;
-	const infoContent = overrides.info ?? spec.infoMd;
-	const descriptionHtml = descriptionContent ? renderMarkdown(descriptionContent) : undefined;
-	const infoHtml = infoContent ? renderMarkdown(infoContent) : undefined;
+	const overrideDescription = normalizeTextContent(overrides.description);
+	const overrideInfo = normalizeTextContent(overrides.info);
+	const markdownDescription = normalizeTextContent(spec.descriptionMd);
+	const markdownInfo = normalizeTextContent(spec.infoMd);
+	const plainDescription = normalizeTextContent(spec.description);
+
+	const descriptionHtml =
+		overrideDescription
+			? renderMarkdown(overrideDescription)
+			: markdownDescription
+				? renderMarkdown(markdownDescription)
+				: plainDescription
+					? renderMarkdown(plainDescription)
+					: undefined;
+	const infoHtml =
+		overrideInfo
+			? renderMarkdown(overrideInfo)
+			: markdownInfo
+				? renderMarkdown(markdownInfo)
+				: undefined;
 
 	const attrs: TableRenderPlan['attrs'] = {
 		title: spec.title,
 		label: spec.label,
 	};
-	if (descriptionContent && !descriptionHtml) {
-		attrs.description = descriptionContent;
-	}
 
 	const table = buildTableDataPlan(spec, filteredData);
 
@@ -98,6 +111,11 @@ export function buildTableRenderPlan(
 		infoHtml,
 		table,
 	};
+}
+
+function normalizeTextContent(value?: string): string | undefined {
+	const trimmed = value?.trim();
+	return trimmed ? trimmed : undefined;
 }
 
 export function applyTableRenderPlan(

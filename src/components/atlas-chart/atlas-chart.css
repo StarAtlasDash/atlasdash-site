@@ -33,6 +33,7 @@
 	position: relative;
 	display: inline-flex;
 	align-items: center;
+	flex: 0 0 auto;
 }
 
 .chart-title {
@@ -41,22 +42,6 @@
 	font-weight: 600;
 	color: var(--text, #1a1a1a);
 }
-
-.chart-label {
-	border: 1px solid var(--muted, #5a5a5a);
-	border-radius: 9999px;
-	color: var(--muted, #5a5a5a);
-	font-size: 0.75rem;
-	font-weight: 700;
-	padding: 0.125rem 0.5rem;
-	text-transform: uppercase;
-	white-space: nowrap;
-}
-
-.chart-label[hidden] {
-	display: none;
-}
-
 
 .chart-area {
 	flex: 1 1 auto;
@@ -70,18 +55,35 @@
 
 .chart-description {
 	color: var(--muted, #5a5a5a);
-	font-size: 0.9rem;
+	font-size: 0.75rem;
 	line-height: 1.4;
-	margin: 0 2rem;
-	text-align: center;
+	margin-left: 2rem;
+	text-align: left;
+	display: flex;
+	align-items: flex-start;
+	gap: 0.5rem;
 }
 
 .chart-description[hidden] {
 	display: none;
 }
 
+.description-copy {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
 .description-text {
 	margin: 0;
+}
+
+.info-popup {
+	--popup-trigger-width: 2.25rem;
+	--popup-trigger-height: 2.25rem;
+	--popup-trigger-radius: 0.55rem;
+	--popup-trigger-border: #f4f4f5;
+	--popup-trigger-bg: #fafafa;
+	--popup-trigger-color: #18181b;
 }
 
 .loading-overlay {

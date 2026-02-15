@@ -8,6 +8,14 @@
 		<link rel="stylesheet" href="/src/style.css" />
 	</head>
 	<body>
+		<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false">
+			<symbol id="menu-arrow-right" viewBox="0 0 18 18">
+				<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" stroke="currentColor">
+					<path d="M15.25 9H2.75"></path>
+					<path d="M11 4.75L15.25 9L11 13.25"></path>
+				</g>
+			</symbol>
+		</svg>
 		
 		<div class="content-wrapper">
 		<atlas-navbar></atlas-navbar>
@@ -22,50 +30,86 @@
 			</section>
 			
 			<!-- Chart 1 -->
-			<section class="section">
-				<header class="section__header">
-					<h2>The Galaxy at a Glance</h2>
-				</header>
-				<p class="lead">The Ecosystem dashboards offer a wide-angle view of everything shaping Star Atlas: Galactic Marketplace trends, DAC participation, Daily Active Users, Fleet Rentals, and more. All seen from above, looking in. This chart captures the collective pulse of that activity. Thousands of explorers, traders, and builders interacting with the universe every day, revealing how alive the metaverse truly is.
-				</p>
-				<div class="chart">
-					<atlas-chart
-						id="dailyUsersChart"
-						data-chart-id="line-chart"
-						class="chart-block"
-					></atlas-chart>
+			<section class="section section--feature-chart">
+				<div class="feature-chart-layout">
+					<div class="feature-chart-copy">
+						<header class="section__header">
+							<h2>The Galaxy at a Glance</h2>
+						</header>
+						<p class="lead">The Ecosystem dashboards offer a wide-angle view of everything shaping Star Atlas: Galactic Marketplace trends, DAC participation, Daily Active Users, Fleet Rentals, and more. All seen from above, looking in. This chart captures the collective pulse of that activity. Thousands of explorers, traders, and builders interacting with the universe every day, revealing how alive the metaverse truly is.
+						</p>
+						<a class="feature-chart-link" href="ecosystem.html">
+							<span>Explore Ecosystem Dashboards</span>
+							<svg class="link-arrow-icon" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+								<use href="#menu-arrow-right"></use>
+							</svg>
+						</a>
+					</div>
+					<div class="feature-chart-visual">
+						<atlas-panel type="chart">
+							<atlas-chart
+								id="dailyUsersChart"
+								data-chart-id="line-chart"
+								class="chart-block"
+							></atlas-chart>
+						</atlas-panel>
+					</div>
 				</div>
 			</section>
 
 			<!-- Chart 2 -->
-			<section class="section">
-				<header class="section__header">
-					<h2>The Economic Pulse</h2>
-				</header>
-				<p class="lead">The Game Economy dashboards dive into the engine of Star Atlas: the in-game activities that generate value and resources. Track how factions compete, DACs operate, and how gameplay loops like mining, scanning, and crafting shape the flow of goods and production. This chart shows the balance of fleet activity across those roles, a snapshot of a functioning digital economy in motion.
-				</p>
-				<div class="chart">
-					<atlas-chart
-						id="fleetActivityChart"
-						data-chart-id="fleet-activity-sage"
-						class="chart-block"
-					></atlas-chart>
+			<section class="section section--feature-chart">
+				<div class="feature-chart-layout">
+					<div class="feature-chart-copy">
+						<header class="section__header">
+							<h2>The Economic Pulse</h2>
+						</header>
+						<p class="lead">The Game Economy dashboards dive into the engine of Star Atlas: the in-game activities that generate value and resources. Track how factions compete, DACs operate, and how gameplay loops like mining, scanning, and crafting shape the flow of goods and production. This chart shows the balance of fleet activity across those roles, a snapshot of a functioning digital economy in motion.
+						</p>
+						<a class="feature-chart-link" href="economy.html">
+							<span>Explore Economy Dashboards</span>
+							<svg class="link-arrow-icon" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+								<use href="#menu-arrow-right"></use>
+							</svg>
+						</a>
+					</div>
+					<div class="feature-chart-visual">
+						<atlas-panel type="chart">
+							<atlas-chart
+								id="fleetActivityChart"
+								data-chart-id="fleet-activity-sage"
+								class="chart-block"
+							></atlas-chart>
+						</atlas-panel>
+					</div>
 				</div>
 			</section>
 			
 			<!-- Chart 3 -->
-			<section class="section">
-				<header class="section__header">
-					<h2>The Flow of Value</h2>
-				</header>
-				<p class="lead">The Tokenomics dashboards analyze the currencies that power the ecosystem: ATLAS, POLIS, and z.ink. Explore their movement across wallets, track inflows and outflows, and see how lockers and staking mechanisms shape the balance of power. Here you see daily ATLAS emissions by source, where in-game economics meets blockchain reality.
-				</p>
-				<div class="chart">
-					<atlas-chart
-						id="atlasEmissionsChart"
-						data-chart-id="atlas-emissions"
-						class="chart-block"
-					></atlas-chart>
+			<section class="section section--feature-chart">
+				<div class="feature-chart-layout">
+					<div class="feature-chart-copy">
+						<header class="section__header">
+							<h2>The Flow of Value</h2>
+						</header>
+						<p class="lead">The Tokenomics dashboards analyze the currencies that power the ecosystem: ATLAS, POLIS, and z.ink. Explore their movement across wallets, track inflows and outflows, and see how lockers and staking mechanisms shape the balance of power. Here you see daily ATLAS emissions by source, where in-game economics meets blockchain reality.
+						</p>
+						<a class="feature-chart-link" href="tokenomics.html">
+							<span>Explore Tokenomics Dashboards</span>
+							<svg class="link-arrow-icon" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+								<use href="#menu-arrow-right"></use>
+							</svg>
+						</a>
+					</div>
+					<div class="feature-chart-visual">
+						<atlas-panel type="chart">
+							<atlas-chart
+								id="atlasEmissionsChart"
+								data-chart-id="atlas-emissions"
+								class="chart-block"
+							></atlas-chart>
+						</atlas-panel>
+					</div>
 				</div>
 			</section>
 			
@@ -78,72 +122,59 @@
 					offering a unique vantage point on the metaverse.</p>
 		
 				<div class="grid-3">
-					<div class="card">
+					<a class="card atlas-panel-shell" href="ecosystem.html" aria-label="View Ecosystem Dashboards">
 						<h3>
 							<span class="card__icon" aria-hidden="true">
-								<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
-									<title>rocket</title>
-									<g fill="#212121">
-										<path fill-rule="evenodd" clip-rule="evenodd" d="M7.42376 4.28638C11.3448 0.549344 15.9148 0.998682 16.2994 1.04445C16.6433 1.08538 16.9145 1.35644 16.9555 1.70032C17.0014 2.08438 17.4506 6.6552 13.7136 10.5762C11.4565 12.9444 8.93668 13.743 8.08223 13.9775C7.82226 14.0489 7.544 13.9753 7.35338 13.7846L4.21548 10.6467C4.02485 10.4561 3.9512 10.1778 4.02256 9.91787C4.25708 9.06348 5.05548 6.54358 7.42376 4.28638Z" fill-opacity="0.4"></path>
-										<path d="M8.05112 3.72749C7.84066 3.90251 7.6313 4.08858 7.42376 4.28638C5.82189 5.81312 4.93823 7.46004 4.46149 8.63047C3.87064 8.62075 3.35841 8.67396 2.95575 8.74171C2.64551 8.79391 2.40215 8.85443 2.2404 8.90038C2.15959 8.92334 2.09939 8.9426 2.06163 8.95525C2.04277 8.96158 2.02953 8.96625 2.02217 8.96889L2.01562 8.97128C1.70942 9.08722 1.36321 8.99115 1.16061 8.7337C0.95749 8.47558 0.945953 8.11533 1.13214 7.84474L3.38782 4.56659C3.86364 3.89451 4.44415 3.53832 5.13069 3.42603C5.75112 3.32455 6.41491 3.4344 7.02435 3.54366L8.05112 3.72749Z"></path>
-										<path d="M11.75 7.75C12.578 7.75 13.25 7.07848 13.25 6.25C13.25 5.42152 12.578 4.75 11.75 4.75C10.922 4.75 10.25 5.42152 10.25 6.25C10.25 7.07848 10.922 7.75 11.75 7.75Z"></path>
-										<path fill-rule="evenodd" clip-rule="evenodd" d="M2.66472 12.13C2.91639 12.0034 3.22087 12.0525 3.42005 12.2517L5.74813 14.5803C5.94728 14.7795 5.99628 15.0839 5.8697 15.3355C5.4791 16.112 4.67793 16.6588 3.73582 16.6588H1.99422C1.63353 16.6588 1.34113 16.3664 1.34113 16.0057V14.2642C1.34113 13.3217 1.88822 12.5206 2.66472 12.13Z"></path>
-										<path d="M9.36939 13.5386C9.37909 14.1294 9.32589 14.6415 9.25815 15.0441C9.20595 15.3544 9.14543 15.5977 9.09947 15.7595C9.07651 15.8403 9.05725 15.9005 9.0446 15.9383C9.03827 15.9571 9.0336 15.9704 9.03096 15.9777L9.02856 15.9843C8.91262 16.2905 9.0087 16.6367 9.26615 16.8393C9.52426 17.0424 9.8845 17.0539 10.1551 16.8678L13.4251 14.6179L13.4334 14.6121C14.1055 14.1363 14.4617 13.5558 14.5739 12.8692C14.6753 12.2487 14.5655 11.585 14.4562 10.9755L14.2724 9.94901C14.0974 10.1594 13.9114 10.3687 13.7136 10.5762C12.1868 12.1781 10.5398 13.0619 9.36939 13.5386Z"></path>
-									</g>
-								</svg>
+								<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18"><title>rocket</title><g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" stroke="#212121"><path d="M11.75 7.5C12.44 7.5 13 6.9404 13 6.25C13 5.5596 12.44 5 11.75 5C11.06 5 10.5 5.5596 10.5 6.25C10.5 6.9404 11.06 7.5 11.75 7.5Z" fill="#212121" data-stroke="none" stroke="none"></path> <path d="M2.85699 12.4692C2.20309 12.7981 1.75 13.468 1.75 14.25V16.25H3.75C4.5317 16.25 5.2016 15.7971 5.5305 15.1433"></path> <path d="M13.1707 10.0588C16.6759 6.381 16.2472 2.0942 16.2108 1.7892C15.9049 1.7528 11.619 1.3241 7.94118 4.8293C5.71338 6.9526 4.96349 9.3233 4.74579 10.1164L7.88368 13.2543C8.67678 13.0366 11.0474 12.2865 13.1707 10.0588Z"></path> <path d="M8.26601 4.5279L6.892 4.2819C5.637 4.0569 4.737 3.959 4 5L1.75 8.2699C1.75 8.2699 3.3528 7.6568 5.5921 7.9669"></path> <path d="M10.033 12.4078C10.3431 14.647 9.72998 16.2499 9.72998 16.2499L13 14C14.041 13.263 13.943 12.3629 13.718 11.1079L13.472 9.7339"></path></g></svg>
 							</span>
 							Ecosystem
 						</h3>
 						<p>Dashboards that look from the outside-in:
 							Galactic Marketplace, DAC activity, Daily Active Users, Fleet Rentals, and more.
 							A wide-angle view of everything shaping Star Atlas participation.</p>
-						<a href="ecosystem.html">→ View Ecosystem Dashboards</a>
-					</div>
+						<span class="card__cta">
+							<span>View Ecosystem Dashboards</span>
+							<svg class="link-arrow-icon" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+								<use href="#menu-arrow-right"></use>
+							</svg>
+						</span>
+					</a>
 		
-					<div class="card">
+					<a class="card atlas-panel-shell" href="economy.html" aria-label="View Economy Dashboards">
 						<h3>
 							<span class="card__icon" aria-hidden="true">
-								<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
-									<title>gamepad-3</title>
-									<g fill="#212121">
-										<path fill-rule="evenodd" clip-rule="evenodd" d="M17.28 8.244C16.366 3.083 14.176 2 12.5 2C11.564 2 10.658 2.361 9.96601 3H8.03301C7.34101 2.361 6.43501 2 5.49901 2C3.82301 2 1.63301 3.083 0.719015 8.244C0.415015 9.957 0.257015 11.433 0.249015 12.631C0.241015 13.86 1.14701 14.898 2.31301 14.993C2.37402 14.998 2.43501 15 2.49501 15C3.33101 15 4.10201 14.532 4.51501 13.731L4.79303 13.1367C4.46135 12.8615 4.25 12.4463 4.25 11.9817C4.25 11.1533 4.922 10.4817 5.75 10.4817C6.578 10.4817 7.25 11.1533 7.25 11.9817C7.25 12.1639 7.2175 12.3385 7.15799 12.5H10.842C10.7825 12.3385 10.75 12.1639 10.75 11.9817C10.75 11.1533 11.422 10.4817 12.25 10.4817C13.078 10.4817 13.75 11.1533 13.75 11.9817C13.75 12.4421 13.5425 12.854 13.2159 13.1292L13.504 13.778C13.923 14.589 14.779 15.069 15.683 14.992C16.849 14.897 17.755 13.859 17.747 12.63C17.739 11.432 17.584 9.958 17.28 8.244Z" fill-opacity="0.4"></path>
-										<path d="M10.75 8C11.164 8 11.5 7.6642 11.5 7.25C11.5 6.8358 11.164 6.5 10.75 6.5C10.336 6.5 10 6.8358 10 7.25C10 7.6642 10.336 8 10.75 8Z"></path>
-										<path d="M13.75 8C14.164 8 14.5 7.6642 14.5 7.25C14.5 6.8358 14.164 6.5 13.75 6.5C13.336 6.5 13 6.8358 13 7.25C13 7.6642 13.336 8 13.75 8Z"></path>
-										<path d="M12.25 6.75C12.664 6.75 13 6.4142 13 6C13 5.5858 12.664 5.25 12.25 5.25C11.836 5.25 11.5 5.5858 11.5 6C11.5 6.4142 11.836 6.75 12.25 6.75Z"></path>
-										<path d="M12.25 9.25C12.664 9.25 13 8.9142 13 8.5C13 8.0858 12.664 7.75 12.25 7.75C11.836 7.75 11.5 8.0858 11.5 8.5C11.5 8.9142 11.836 9.25 12.25 9.25Z"></path>
-										<path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 6C6.5 5.58579 6.16421 5.25 5.75 5.25C5.33579 5.25 5 5.58579 5 6V6.5H4.5C4.08579 6.5 3.75 6.83579 3.75 7.25C3.75 7.66421 4.08579 8 4.5 8H5V8.5C5 8.91421 5.33579 9.25 5.75 9.25C6.16421 9.25 6.5 8.91421 6.5 8.5V8H7C7.41421 8 7.75 7.66421 7.75 7.25C7.75 6.83579 7.41421 6.5 7 6.5H6.5V6Z"></path>
-										<path d="M5.75 13.4817C6.578 13.4817 7.25 12.8101 7.25 11.9817C7.25 11.1533 6.578 10.4817 5.75 10.4817C4.922 10.4817 4.25 11.1533 4.25 11.9817C4.25 12.8101 4.922 13.4817 5.75 13.4817Z"></path>
-										<path d="M12.25 13.4817C13.078 13.4817 13.75 12.8101 13.75 11.9817C13.75 11.1533 13.078 10.4817 12.25 10.4817C11.422 10.4817 10.75 11.1533 10.75 11.9817C10.75 12.8101 11.422 13.4817 12.25 13.4817Z"></path>
-									</g>
-								</svg>
+								<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18"><title>gamepad</title><g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" stroke="#212121"><circle cx="10.75" cy="8.75" r=".75" fill="#212121" data-stroke="none" stroke="none"></circle><circle cx="12.25" cy="6.75" r=".75" fill="#212121" data-stroke="none" stroke="none"></circle><line x1="6.25" y1="6.5" x2="6.25" y2="9"></line><line x1="7.5" y1="7.75" x2="5" y2="7.75"></line><path d="M16.914,11.986l-1.993-6.799c-.25-.852-1.031-1.438-1.919-1.438H4.998c-.888,0-1.669,.585-1.919,1.438l-1.993,6.799c-.051,.163-.086,.333-.086,.514,0,.967,.784,1.75,1.75,1.75,.584,0,1.098-.289,1.415-.728l1.272-1.772h7.124l1.272,1.772c.318,.439,.832,.728,1.415,.728,.966,0,1.75-.783,1.75-1.75,0-.18-.035-.35-.086-.514Z"></path></g></svg>
 							</span>
 							Game Economy
 						</h3>
 						<p>Analyze core gameplay and economic loops:
 							Local Marketplaces, Faction vs Faction stats, DAC vs DAC comparisons, Mining, Scanning, Crafting,
 							and other gameloops that fuel the economy.</p>
-						<a href="economy.html">→ View Economy Dashboards</a>
-					</div>
+						<span class="card__cta">
+							<span>View Economy Dashboards</span>
+							<svg class="link-arrow-icon" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+								<use href="#menu-arrow-right"></use>
+							</svg>
+						</span>
+					</a>
 		
-					<div class="card">
+					<a class="card atlas-panel-shell" href="tokenomics.html" aria-label="View Tokenomics Dashboards">
 						<h3>
 							<span class="card__icon" aria-hidden="true">
-								<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
-									<title>dollar-value-up</title>
-									<g fill="#212121">
-										<path opacity="0.4" d="M9 0.5C5.2782 0.5 2.25 3.5282 2.25 7.25C2.25 10.9718 5.2782 14 9 14C12.7218 14 15.75 10.9718 15.75 7.25C15.75 3.5282 12.7218 0.5 9 0.5Z"></path>
-										<path d="M16.25 10.5H12.75C12.3359 10.5 12 10.8359 12 11.25C12 11.6641 12.3359 12 12.75 12H14.4385L12.1299 14.3086C12.0664 14.3716 11.9712 14.3955 11.8877 14.3721L5.76031 12.6817C5.15581 12.5162 4.50251 12.6876 4.05771 13.1319L1.46981 15.7198C1.17681 16.0128 1.17681 16.4874 1.46981 16.7803C1.61631 16.9268 1.80821 17 2.00011 17C2.19201 17 2.38391 16.9268 2.53041 16.7803L5.11831 14.1924C5.18231 14.1289 5.27551 14.1035 5.36151 14.1279L11.4889 15.8183C12.0958 15.9838 12.7487 15.8134 13.1915 15.3681L15.5001 13.0595V14.7499C15.5001 15.164 15.836 15.4999 16.2501 15.4999C16.6642 15.4999 17.0001 15.164 17.0001 14.7499V11.2499C17.0001 10.8358 16.6641 10.5 16.25 10.5Z"></path>
-										<path d="M9.79589 6.5H8.20459C8.07079 6.5 7.94529 6.44782 7.85059 6.35352C7.75639 6.25932 7.70459 6.1338 7.70459 6C7.70459 5.7241 7.92869 5.5 8.20459 5.5H10.8184C11.2325 5.5 11.5684 5.1641 11.5684 4.75C11.5684 4.3359 11.2325 4 10.8184 4H9.74999V3.5C9.74999 3.0859 9.41409 2.75 8.99999 2.75C8.58589 2.75 8.24999 3.0859 8.24999 3.5V4H8.20459C7.10159 4 6.20459 4.89701 6.20459 5.99951C6.20409 6.53371 6.41209 7.03659 6.78999 7.41449C7.16789 7.79189 7.67039 7.99988 8.20459 7.99988H9.79589C10.0713 7.99988 10.2954 8.22398 10.2954 8.49988C10.2954 8.77578 10.0713 8.99988 9.79589 8.99988H7.18159C6.76749 8.99988 6.43159 9.33578 6.43159 9.74988C6.43159 10.164 6.76749 10.4999 7.18159 10.4999H8.24999V10.9999C8.24999 11.414 8.58589 11.7499 8.99999 11.7499C9.41409 11.7499 9.74999 11.414 9.74999 10.9999V10.4999H9.79589C10.8984 10.4999 11.7954 9.60288 11.7954 8.49988C11.7954 7.39688 10.8984 6.5 9.79589 6.5Z"></path>
-									</g>
-								</svg>
+								<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18"><title>wallet-2</title><g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" stroke="#212121"><path d="M2.25 6.49998C2.25 4.76698 3.499 3.28698 5.207 2.99498L11.769 1.87498C12.203 1.80098 12.635 2.01998 12.832 2.41398"></path> <path d="M15.75 11.75V13.25C15.75 14.355 14.855 15.25 13.75 15.25H4.25C3.145 15.25 2.25 14.355 2.25 13.25V6.75C2.25 5.645 3.145 4.75 4.25 4.75H13.75C14.855 4.75 15.75 5.645 15.75 6.75V8.25"></path> <path d="M15.75 11.75H13C12.034 11.75 11.25 10.966 11.25 10C11.25 9.033 12.034 8.25 13 8.25H15.75C16.302 8.25 16.75 8.698 16.75 9.25V10.75C16.75 11.302 16.302 11.75 15.75 11.75Z"></path></g></svg>
 							</span>
 							Tokenomics
 						</h3>
 						<p>Dive deep into Star Atlas token flows:
 							ATLAS & POLIS supply, inflow and outflow tracking, Locker data, and ecosystem-wide financial
 							activity, visualized with clarity.</p>
-						<a href="tokenomics.html">→ View Tokenomics Dashboards</a>
-					</div>
+						<span class="card__cta">
+							<span>View Tokenomics Dashboards</span>
+							<svg class="link-arrow-icon" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+								<use href="#menu-arrow-right"></use>
+							</svg>
+						</span>
+					</a>
 				</div>
 			</section>
 

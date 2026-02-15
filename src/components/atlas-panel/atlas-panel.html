@@ -1,0 +1,14 @@
+<article class="panel atlas-panel-shell">
+	<header class="panel__header">
+		<div class="panel__header-left">
+			<span class="panel__index" aria-hidden="true"></span>
+		</div>
+		<div class="panel__header-right">
+			<slot name="header"></slot>
+			<span id="panel-tag" class="panel__tag" hidden></span>
+		</div>
+	</header>
+	<div class="panel__body">
+		<slot id="panel-content-slot"></slot>
+	</div>
+</article>

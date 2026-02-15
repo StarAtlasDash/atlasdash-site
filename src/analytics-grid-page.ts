@@ -2,6 +2,7 @@ import { registerAtlasAnalyticsGrid } from './components/atlas-analytics-grid';
 import { registerAtlasChart } from './components/atlas-chart';
 import { registerAtlasFilter } from './components/atlas-filter';
 import { registerAtlasNavbar } from './components/atlas-navbar';
+import { registerAtlasPanel } from './components/atlas-panel';
 import { registerAtlasTable } from './components/atlas-table';
 import type { AnalyticsGridSpec } from './components/atlas-analytics-grid/atlas-analytics-grid';
 import type { ChartSpec } from './charts/chart-spec';
@@ -12,6 +13,7 @@ registerAtlasChart();
 registerAtlasFilter();
 registerAtlasTable();
 registerAtlasNavbar();
+registerAtlasPanel();
 
 document.addEventListener('DOMContentLoaded', async () => {
 	const gridEl = document.querySelector<HTMLElement & {

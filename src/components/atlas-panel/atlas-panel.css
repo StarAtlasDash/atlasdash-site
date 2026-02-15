@@ -1,0 +1,92 @@
+@import '../../styles/atlas-panel-shell.css';
+
+:host {
+	display: block;
+	font-family: inherit;
+	line-height: inherit;
+	-webkit-font-smoothing: antialiased;
+	color: #52525b;
+}
+
+.panel {
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	padding: 0 1rem 0.5rem;
+	overflow: hidden;
+}
+
+.panel__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	padding: 0.375rem 0rem 0.5rem;
+	min-height: 2rem;
+}
+
+.panel__header-left {
+	display: flex;
+	align-items: center;
+	min-width: 0;
+}
+
+.panel__header-right {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-left: auto;
+	min-width: 0;
+}
+
+.panel__index {
+	font-size: 0.825rem;
+	font-weight: 300;
+	line-height: 1;
+	letter-spacing: 0.03em;
+	color: #a1a1aa;
+	white-space: nowrap;
+}
+
+.panel__tag {
+	-webkit-font-smoothing: antialiased;
+	font-family: inherit;
+	line-height: inherit;
+	background: #f4f4f5;
+	color: #71717a;
+	text-transform: uppercase;
+	border-radius: 6px;
+	padding: 0.25rem 0.5rem;
+	font-size: 0.65rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	white-space: nowrap;
+}
+
+.panel__tag[hidden] {
+	display: none;
+}
+
+:host([data-panel-type='chart']) .panel__index::before {
+	content: 'FIG ' counter(atlas-figure-counter);
+}
+
+:host([data-panel-type='table']) .panel__index::before {
+	content: 'TABLE ' counter(atlas-table-counter);
+}
+
+slot[name='header']:empty {
+	display: none;
+}
+
+.panel__body {
+	padding: 0 0.4rem 0.4rem;
+}
+
+::slotted(*) {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+	margin: 0;
+}

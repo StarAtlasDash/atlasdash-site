@@ -1,5 +1,6 @@
 import { registerAtlasChart } from './components/atlas-chart';
 import { registerAtlasFilter } from './components/atlas-filter';
+import { registerAtlasPanel } from './components/atlas-panel';
 import { registerAtlasTable } from './components/atlas-table';
 import { registerAtlasAnalyticsGrid } from './components/atlas-analytics-grid';
 import { registerAtlasNavbar } from './components/atlas-navbar';
@@ -9,6 +10,7 @@ import { getQueryData } from './data/query-cache';
 
 registerAtlasChart();
 registerAtlasFilter();
+registerAtlasPanel();
 registerAtlasTable();
 registerAtlasAnalyticsGrid();
 registerAtlasNavbar();

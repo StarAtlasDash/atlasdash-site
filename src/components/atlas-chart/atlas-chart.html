@@ -2,18 +2,19 @@
 	<header class="chart-header">
 		<div class="title-row">
 			<h3 class="chart-title"></h3>
-			<div class="info-wrap">
-				<atlas-popup class="info-popup"></atlas-popup>
-			</div>
 		</div>
-		<div class="chart-label"></div>
 	</header>
 	<div class="chart-area">
 		<div class="chart-canvas"></div>
 	</div>
 	<div class="chart-description">
-		<slot name="description"></slot>
-		<p class="description-text"></p>
+		<div class="description-copy">
+			<slot name="description"></slot>
+			<p class="description-text"></p>
+		</div>
+		<div class="info-wrap">
+			<atlas-popup class="info-popup"></atlas-popup>
+		</div>
 	</div>
 	<div class="loading-overlay" hidden>
 		<div class="loading-spinner" aria-hidden="true"></div>

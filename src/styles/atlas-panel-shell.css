@@ -1,0 +1,31 @@
+:root {
+	--atlas-panel-shell-border-width: 1px;
+	--atlas-panel-shell-border-color: #e4e4e7;
+	--atlas-panel-shell-border-color-hover: #d4d4d8;
+	--atlas-panel-shell-radius: 0.5rem;
+	--atlas-panel-shell-background: #fff;
+	--atlas-panel-shell-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+	--atlas-panel-shell-shadow-hover: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+	--atlas-panel-shell-lift: translateY(-1px);
+	--atlas-panel-shell-transition-duration: 300ms;
+	--atlas-panel-shell-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.atlas-panel-shell {
+	border-style: solid;
+	border-width: var(--atlas-panel-shell-border-width);
+	border-color: var(--atlas-panel-shell-border-color);
+	border-radius: var(--atlas-panel-shell-radius);
+	background-color: var(--atlas-panel-shell-background);
+	box-shadow: var(--atlas-panel-shell-shadow);
+	transition-property: border-color, box-shadow, transform;
+	transition-timing-function: var(--atlas-panel-shell-transition-easing);
+	transition-duration: var(--atlas-panel-shell-transition-duration);
+}
+
+.atlas-panel-shell:hover,
+.atlas-panel-shell:focus-within {
+	border-color: var(--atlas-panel-shell-border-color-hover);
+	box-shadow: var(--atlas-panel-shell-shadow-hover);
+	transform: var(--atlas-panel-shell-lift);
+}
