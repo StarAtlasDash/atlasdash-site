@@ -115,6 +115,36 @@
 	height: 100%;
 }
 
+.table-scroll,
+.column-toggle-list {
+	scrollbar-width: thin;
+	scrollbar-color: #b9c0cc #eceff4;
+}
+
+.table-scroll::-webkit-scrollbar,
+.column-toggle-list::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+
+.table-scroll::-webkit-scrollbar-track,
+.column-toggle-list::-webkit-scrollbar-track {
+	background: #eceff4;
+	border-radius: 999px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb,
+.column-toggle-list::-webkit-scrollbar-thumb {
+	background: #b9c0cc;
+	border-radius: 999px;
+	border: 2px solid #eceff4;
+}
+
+.table-scroll::-webkit-scrollbar-thumb:hover,
+.column-toggle-list::-webkit-scrollbar-thumb:hover {
+	background: #a9b1be;
+}
+
 .data-table {
 	width: 100%;
 	border-collapse: collapse;
